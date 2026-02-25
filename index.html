@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>球球消消乐 - Ball Match</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow: hidden;
+            touch-action: none;
+        }
+        
+        #gameContainer {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        /* 顶部信息栏 */
+        #topBar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            flex-shrink: 0;
+        }
+        
+        #levelInfo {
+            color: white;
+            font-size: clamp(14px, 4vw, 18px);
+            font-weight: bold;
+        }
+        
+        #scoreInfo {
+            color: #FFD700;
+            font-size: clamp(12px, 3.5vw, 16px);
+        }
+        
+        /* 游戏区域 */
+        #gameArea {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #board {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* 球球样式 - 高对比度高饱和度 */
+        .ball {
+            position: absolute;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(14px, 3.5vw, 20px);
+            z-index: 1;
+            box-shadow: 
+                inset -3px -3px 8px rgba(255,255,255,0.9),
+                inset 3px 3px 8px rgba(255,255,255,0.5),
+                inset 2px 2px 6px rgba(0,0,0,0.15),
+                0 6px 12px rgba(0,0,0,0.4),
+                0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .ball::before {
+            content: '';
+            position: absolute;
+            top: 8%;
+            left: 15%;
+            width: 28%;
+            height: 20%;
+            background: radial-gradient(ellipse at center, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.5) 50%, transparent 70%);
+            border-radius: 50%;
+            transform: rotate(-25deg);
+        }
+        
+        .ball::after {
+            content: '';
+            position: absolute;
+            bottom: 12%;
+            right: 18%;
+            width: 18%;
+            height: 12%;
+            background: radial-gradient(ellipse at center, rgba(255,255,255,0.6) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        
+        .ball.clickable {
+            animation: float 2s ease-in-out infinite;
+        }
+        
+        .ball.clickable:hover {
+            transform: scale(1.08);
+            filter: brightness(1.15);
+        }
+        
+        .ball.blocked {
+            opacity: 0.5;
+            filter: brightness(0.55) saturate(0.6);
+            cursor: not-allowed;
+        }
+        
+        .ball.selected {
+            animation: bounce 0.5s ease-in-out infinite;
+            box-shadow: 
+                inset -3px -3px 8px rgba(255,255,255,0.95),
+                inset 3px 3px 8px rgba(255,255,255,0.6),
+                0 0 25px rgba(255,255,255,0.7),
+                0 0 0 4px rgba(255,255,255,0.5);
+        }
+        
+        .ball.removing {
+            animation: popOut 0.3s ease-out forwards;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: scale(1.05) translateY(0); }
+            50% { transform: scale(1.1) translateY(-5px); }
+        }
+        
+        @keyframes popOut {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.25); opacity: 0.9; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+        
+        /* 底部槽位 */
+        #slotArea {
+            height: clamp(65px, 11vh, 85px);
+            background: rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            gap: clamp(3px, 1vw, 8px);
+            position: relative;
+            flex-shrink: 0;
+        }
+        
+        #slotLabel {
+            position: absolute;
+            left: 10px;
+            color: rgba(255,255,255,0.7);
+            font-size: clamp(9px, 2.5vw, 11px);
+        }
+        
+        .slot {
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: 2px dashed rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .slot.filled {
+            border: none;
+            background: transparent;
+        }
+        
+        /* 道具按钮区域 */
+        #toolsArea {
+            position: absolute;
+            bottom: clamp(75px, 13vh, 100px);
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: clamp(8px, 2.5vw, 16px);
+            z-index: 100;
+            background: rgba(0,0,0,0.2);
+            padding: 8px 15px;
+            border-radius: 50px;
+        }
+        
+        .toolWrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .toolBtn {
+            width: clamp(44px, 10vw, 56px);
+            height: clamp(44px, 10vw, 56px);
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(145deg, #FFD700, #FFA500);
+            color: white;
+            font-size: clamp(16px, 4vw, 22px);
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(255, 165, 0, 0.4);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .toolBtn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 18px rgba(255, 165, 0, 0.6);
+        }
+        
+        .toolBtn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .toolCount {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #ff4444;
+            color: white;
+            width: clamp(16px, 4vw, 22px);
+            height: clamp(16px, 4vw, 22px);
+            border-radius: 50%;
+            font-size: clamp(9px, 2.5vw, 12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .toolLabel {
+            color: rgba(255,255,255,0.9);
+            font-size: clamp(9px, 2.5vw, 11px);
+            white-space: nowrap;
+        }
+        
+        /* 弹窗 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+        
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modalContent {
+            background: linear-gradient(145deg, #667eea, #764ba2);
+            padding: clamp(20px, 6vw, 35px);
+            border-radius: 20px;
+            text-align: center;
+            color: white;
+            max-width: min(320px, 85vw);
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            transform: scale(0.8);
+            transition: transform 0.3s;
+        }
+        
+        .modal.show .modalContent {
+            transform: scale(1);
+        }
+        
+        .modalTitle {
+            font-size: clamp(20px, 5.5vw, 26px);
+            margin-bottom: 12px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .modalText {
+            font-size: clamp(13px, 3.5vw, 15px);
+            margin-bottom: 22px;
+            opacity: 0.9;
+        }
+        
+        .modalBtn {
+            padding: clamp(10px, 3.5vw, 14px) clamp(25px, 7vw, 35px);
+            font-size: clamp(15px, 4vw, 17px);
+            border: none;
+            border-radius: 30px;
+            background: linear-gradient(145deg, #FFD700, #FFA500);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(255, 165, 0, 0.4);
+            transition: all 0.2s;
+        }
+        
+        .modalBtn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(255, 165, 0, 0.6);
+        }
+        
+        /* 开始画面 */
+        #startScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+        
+        #gameTitle {
+            font-size: clamp(28px, 9vw, 44px);
+            color: white;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        
+        #gameSubtitle {
+            font-size: clamp(13px, 3.5vw, 16px);
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 35px;
+            text-align: center;
+        }
+        
+        .demoBall {
+            width: clamp(50px, 15vw, 70px);
+            height: clamp(50px, 15vw, 70px);
+            border-radius: 50%;
+            margin: clamp(4px, 1.5vw, 8px);
+            display: inline-block;
+            animation: demoBounce 1s ease-in-out infinite;
+            box-shadow: 
+                inset -3px -3px 8px rgba(255,255,255,0.9),
+                inset 3px 3px 8px rgba(255,255,255,0.5),
+                0 6px 12px rgba(0,0,0,0.4);
+        }
+        
+        .demoBall:nth-child(2) { animation-delay: 0.1s; }
+        .demoBall:nth-child(3) { animation-delay: 0.2s; }
+        
+        @keyframes demoBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+        
+        #startBtn {
+            padding: clamp(12px, 4vw, 18px) clamp(35px, 10vw, 55px);
+            font-size: clamp(16px, 4.5vw, 22px);
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(145deg, #FFD700, #FFA500);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 6px 20px rgba(255, 165, 0, 0.4);
+            transition: all 0.3s;
+            margin-top: 35px;
+        }
+        
+        #startBtn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 30px rgba(255, 165, 0, 0.6);
+        }
+        
+        /* 粒子效果 */
+        .particle {
+            position: absolute;
+            width: clamp(5px, 1.5vw, 9px);
+            height: clamp(5px, 1.5vw, 9px);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particleFade 0.6s ease-out forwards;
+        }
+        
+        @keyframes particleFade {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+        }
+        
+        /* 连击提示 */
+        #comboText {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: clamp(28px, 9vw, 44px);
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            pointer-events: none;
+            opacity: 0;
+            z-index: 500;
+        }
+        
+        .comboShow {
+            animation: comboAnim 1s ease-out forwards;
+        }
+        
+        @keyframes comboAnim {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+            80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1) translateY(-40px); opacity: 0; }
+        }
+        
+        /* 关卡进度 */
+        #levelProgress {
+            position: absolute;
+            top: 45px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255,255,255,0.8);
+            font-size: clamp(11px, 3vw, 13px);
+            background: rgba(0,0,0,0.2);
+            padding: 4px 12px;
+            border-radius: 15px;
+        }
+        
+        /* 音效开关 */
+        #soundToggle {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <!-- 开始画面 -->
+    <div id="startScreen">
+        <h1 id="gameTitle">球球消消乐</h1>
+        <p id="gameSubtitle">点击球球，三个相同颜色即可消除</p>
+        <div>
+            <div class="demoBall" style="background: radial-gradient(circle at 30% 30%, #ff0000, #cc0000);"></div>
+            <div class="demoBall" style="background: radial-gradient(circle at 30% 30%, #0066ff, #0044cc);"></div>
+            <div class="demoBall" style="background: radial-gradient(circle at 30% 30%, #ffcc00, #ff9900);"></div>
+        </div>
+        <button id="startBtn">开始游戏</button>
+    </div>
+
+    <!-- 游戏容器 -->
+    <div id="gameContainer" style="display: none;">
+        <button id="soundToggle">🔊</button>
+        
+        <div id="topBar">
+            <div id="levelInfo">第 1 关</div>
+            <div id="scoreInfo">得分: 0</div>
+        </div>
+        
+        <div id="levelProgress">关卡 1/15</div>
+        
+        <div id="gameArea">
+            <div id="board"></div>
+        </div>
+        
+        <div id="toolsArea">
+            <div class="toolWrapper">
+                <button class="toolBtn" id="shuffleBtn" title="打乱剩余球球的颜色">
+                    🔄
+                    <span class="toolCount" id="shuffleCount">3</span>
+                </button>
+                <span class="toolLabel">打乱</span>
+            </div>
+            <div class="toolWrapper">
+                <button class="toolBtn" id="undoBtn" title="撤销上一步操作">
+                    ↩️
+                    <span class="toolCount" id="undoCount">3</span>
+                </button>
+                <span class="toolLabel">撤销</span>
+            </div>
+            <div class="toolWrapper">
+                <button class="toolBtn" id="hintBtn" title="提示可点击的球球">
+                    💡
+                    <span class="toolCount" id="hintCount">3</span>
+                </button>
+                <span class="toolLabel">提示</span>
+            </div>
+        </div>
+        
+        <div id="slotArea">
+            <span id="slotLabel">槽位</span>
+            <div class="slot" data-index="0"></div>
+            <div class="slot" data-index="1"></div>
+            <div class="slot" data-index="2"></div>
+            <div class="slot" data-index="3"></div>
+            <div class="slot" data-index="4"></div>
+            <div class="slot" data-index="5"></div>
+            <div class="slot" data-index="6"></div>
+        </div>
+    </div>
+    
+    <!-- 连击文字 -->
+    <div id="comboText"></div>
+    
+    <!-- 游戏结束弹窗 -->
+    <div id="gameOverModal" class="modal">
+        <div class="modalContent">
+            <h2 class="modalTitle">游戏结束</h2>
+            <p class="modalText">槽位已满，再试一次吧！</p>
+            <button class="modalBtn" onclick="game.restart()">再玩一次</button>
+        </div>
+    </div>
+    
+    <!-- 胜利弹窗 -->
+    <div id="winModal" class="modal">
+        <div class="modalContent">
+            <h2 class="modalTitle" id="winTitle">恭喜通关！</h2>
+            <p class="modalText" id="winText">太棒了！你成功消除了所有球球！</p>
+            <button class="modalBtn" id="nextBtn" onclick="game.nextLevel()">下一关</button>
+        </div>
+    </div>
+
+    <script>
+        // 无版权音效生成器 - 使用Web Audio API生成简单音效
+        class SoundManager {
+            constructor() {
+                this.enabled = true;
+                this.audioContext = null;
+                this.initAudio();
+            }
+            
+            initAudio() {
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                } catch(e) {
+                    console.log('Audio not supported');
+                }
+            }
+            
+            // 点击音效 - 短促的"滴"声
+            playClick() {
+                if (!this.enabled || !this.audioContext) return;
+                this.playTone(800, 0.05, 0.1, 'sine');
+            }
+            
+            // 消除音效 - 愉快的"叮"声
+            playMatch() {
+                if (!this.enabled || !this.audioContext) return;
+                this.playTone(600, 0.1, 0.15, 'sine');
+                setTimeout(() => this.playTone(800, 0.1, 0.15, 'sine'), 80);
+                setTimeout(() => this.playTone(1000, 0.15, 0.2, 'sine'), 160);
+            }
+            
+            // 胜利音效 - 上升的旋律
+            playWin() {
+                if (!this.enabled || !this.audioContext) return;
+                [523, 659, 784, 1047].forEach((freq, i) => {
+                    setTimeout(() => this.playTone(freq, 0.15, 0.2, 'triangle'), i * 120);
+                });
+            }
+            
+            // 失败音效 - 下降的音调
+            playLose() {
+                if (!this.enabled || !this.audioContext) return;
+                [400, 350, 300, 250].forEach((freq, i) => {
+                    setTimeout(() => this.playTone(freq, 0.2, 0.25, 'sawtooth'), i * 100);
+                });
+            }
+            
+            // 道具使用音效
+            playTool() {
+                if (!this.enabled || !this.audioContext) return;
+                this.playTone(500, 0.08, 0.12, 'square');
+                setTimeout(() => this.playTone(700, 0.08, 0.12, 'square'), 60);
+            }
+            
+            // 连击音效
+            playCombo() {
+                if (!this.enabled || !this.audioContext) return;
+                this.playTone(880, 0.1, 0.15, 'sine');
+            }
+            
+            playTone(frequency, attack, decay, type = 'sine') {
+                if (!this.audioContext) return;
+                
+                const oscillator = this.audioContext.createOscillator();
+                const gainNode = this.audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(this.audioContext.destination);
+                
+                oscillator.frequency.value = frequency;
+                oscillator.type = type;
+                
+                const now = this.audioContext.currentTime;
+                gainNode.gain.setValueAtTime(0, now);
+                gainNode.gain.linearRampToValueAtTime(0.3, now + attack);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, now + attack + decay);
+                
+                oscillator.start(now);
+                oscillator.stop(now + attack + decay + 0.05);
+            }
+            
+            toggle() {
+                this.enabled = !this.enabled;
+                return this.enabled;
+            }
+        }
+
+        // 游戏配置 - 15个关卡（确保每关都能完全消除）
+        const CONFIG = {
+            slotCount: 7,
+            // 高对比度颜色配置
+            colors: [
+                { name: 'red',    bg: 'radial-gradient(circle at 30% 30%, #ff0000, #cc0000)', emoji: '🔴' },
+                { name: 'blue',   bg: 'radial-gradient(circle at 30% 30%, #0066ff, #0044cc)', emoji: '🔵' },
+                { name: 'yellow', bg: 'radial-gradient(circle at 30% 30%, #ffcc00, #ff9900)', emoji: '🟡' },
+                { name: 'green',  bg: 'radial-gradient(circle at 30% 30%, #00cc00, #009900)', emoji: '🟢' },
+                { name: 'purple', bg: 'radial-gradient(circle at 30% 30%, #9900ff, #6600cc)', emoji: '🟣' },
+                { name: 'orange', bg: 'radial-gradient(circle at 30% 30%, #ff6600, #cc4400)', emoji: '🟠' },
+                { name: 'cyan',   bg: 'radial-gradient(circle at 30% 30%, #00cccc, #009999)', emoji: '💎' },
+                { name: 'pink',   bg: 'radial-gradient(circle at 30% 30%, #ff66cc, #cc3399)', emoji: '💗' }
+            ],
+            // 15个关卡配置 - 确保每关球数都是3的倍数
+            levels: [
+                // 超简单入门 (1-3)
+                { rows: 3, cols: 4, layers: 1, types: 2, name: "初次体验" },   // 12球 = 3×4
+                { rows: 3, cols: 4, layers: 1, types: 3, name: "简单上手" },   // 12球
+                { rows: 3, cols: 5, layers: 1, types: 3, name: "渐入佳境" },   // 15球
+                
+                // 简单关卡 (4-6)
+                { rows: 4, cols: 4, layers: 1, types: 3, name: "稳步前进" },   // 16→15球
+                { rows: 4, cols: 5, layers: 1, types: 3, name: "小有成就" },   // 20→18球
+                { rows: 4, cols: 5, layers: 1, types: 4, name: "初露锋芒" },   // 20→18球
+                
+                // 中等关卡 (7-9)
+                { rows: 4, cols: 6, layers: 1, types: 4, name: "挑战开始" },   // 24球
+                { rows: 5, cols: 5, layers: 1, types: 4, name: "继续加油" },   // 25→24球
+                { rows: 5, cols: 6, layers: 1, types: 5, name: "突破自我" },   // 30球
+                
+                // 进阶关卡 (10-12) - 开始加层数
+                { rows: 4, cols: 5, layers: 2, types: 5, name: " halfway" },   // 40→39球
+                { rows: 5, cols: 5, layers: 2, types: 5, name: "困难重重" },   // 50→48球
+                { rows: 5, cols: 6, layers: 2, types: 6, name: "登峰造极" },   // 60球
+                
+                // 困难关卡 (13-15)
+                { rows: 5, cols: 6, layers: 2, types: 6, name: "王者之路" },   // 60球
+                { rows: 6, cols: 6, layers: 2, types: 6, name: "传奇难度" },   // 72球
+                { rows: 6, cols: 6, layers: 3, types: 6, name: "终极挑战" }    // 108球
+            ]
+        };
+
+        // 验证每关球数是否都是3的倍数
+        CONFIG.levels.forEach((level, index) => {
+            const total = level.rows * level.cols * level.layers;
+            const usable = Math.floor(total / 3) * 3;
+            if (total !== usable) {
+                console.warn(`关卡${index + 1}球数${total}不是3的倍数，将使用${usable}个球`);
+            }
+        });
+
+        // 游戏状态
+        class Game {
+            constructor() {
+                this.level = 1;
+                this.score = 0;
+                this.balls = [];
+                this.slots = [];
+                this.history = [];
+                this.tools = { shuffle: 3, undo: 3, hint: 3 };
+                this.isProcessing = false;
+                this.combo = 0;
+                this.lastMatchTime = 0;
+                this.ballSize = 50;
+                this.ballGap = 6;
+                this.soundManager = new SoundManager();
+                
+                this.init();
+            }
+            
+            init() {
+                this.bindEvents();
+                this.handleResize();
+                window.addEventListener('resize', () => this.handleResize());
+            }
+            
+            bindEvents() {
+                document.getElementById('startBtn').addEventListener('click', () => {
+                    document.getElementById('startScreen').style.display = 'none';
+                    document.getElementById('gameContainer').style.display = 'flex';
+                    this.soundManager.initAudio(); // 用户交互后初始化音频
+                    this.startLevel();
+                });
+                
+                document.getElementById('shuffleBtn').addEventListener('click', () => {
+                    this.soundManager.playTool();
+                    this.useTool('shuffle');
+                });
+                document.getElementById('undoBtn').addEventListener('click', () => {
+                    this.soundManager.playTool();
+                    this.useTool('undo');
+                });
+                document.getElementById('hintBtn').addEventListener('click', () => {
+                    this.soundManager.playTool();
+                    this.useTool('hint');
+                });
+                
+                // 音效开关
+                document.getElementById('soundToggle').addEventListener('click', (e) => {
+                    const enabled = this.soundManager.toggle();
+                    e.target.textContent = enabled ? '🔊' : '🔇';
+                });
+            }
+            
+            handleResize() {
+                const gameArea = document.getElementById('gameArea');
+                const width = gameArea.clientWidth;
+                const height = gameArea.clientHeight;
+                const levelConfig = CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)];
+                
+                const maxCols = levelConfig.cols;
+                const maxLayers = levelConfig.layers;
+                
+                const availWidth = width * 0.95;
+                const availHeight = height * 0.9;
+                
+                const sizeByWidth = Math.floor(availWidth / (maxCols + maxLayers * 0.15));
+                const sizeByHeight = Math.floor(availHeight / (levelConfig.rows + maxLayers * 0.15));
+                
+                this.ballSize = Math.max(32, Math.min(52, Math.min(sizeByWidth, sizeByHeight)));
+                this.ballGap = Math.max(3, Math.floor(this.ballSize / 12));
+                
+                const slots = document.querySelectorAll('.slot');
+                slots.forEach(slot => {
+                    slot.style.width = this.ballSize + 'px';
+                    slot.style.height = this.ballSize + 'px';
+                });
+                
+                if (this.balls.length > 0 && document.getElementById('gameContainer').style.display !== 'none') {
+                    this.startLevel();
+                }
+            }
+            
+            startLevel() {
+                const levelConfig = CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)];
+                this.generateBoard(levelConfig);
+                this.updateUI();
+            }
+            
+            generateBoard(config) {
+                this.balls = [];
+                this.slots = [];
+                this.history = [];
+                this.updateSlots();
+                
+                const board = document.getElementById('board');
+                board.innerHTML = '';
+                
+                // 计算总球数（确保是3的倍数）
+                const totalBalls = config.rows * config.cols * config.layers;
+                const usableBalls = Math.floor(totalBalls / 3) * 3;
+                
+                console.log(`关卡${this.level}: 总球数${totalBalls}, 可用${usableBalls}`);
+                
+                // 生成颜色分布 - 确保每种颜色都是3的倍数
+                const colors = CONFIG.colors.slice(0, config.types);
+                const ballData = [];
+                
+                // 计算每种颜色需要多少个球（确保是3的倍数）
+                const ballsPerColorBase = Math.floor(usableBalls / config.types);
+                const remainder = usableBalls - (ballsPerColorBase * config.types);
+                
+                colors.forEach((color, index) => {
+                    // 前 remainder 种颜色多分配3个球
+                    const count = ballsPerColorBase + (index < remainder / 3 ? 3 : 0);
+                    for (let i = 0; i < count; i++) {
+                        ballData.push({ ...color, id: Math.random().toString(36).substr(2, 9) });
+                    }
+                });
+                
+                // 打乱
+                for (let i = ballData.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [ballData[i], ballData[j]] = [ballData[j], ballData[i]];
+                }
+                
+                // 计算布局
+                const gameArea = document.getElementById('gameArea');
+                const areaWidth = gameArea.clientWidth;
+                const areaHeight = gameArea.clientHeight;
+                
+                const ballTotalSize = this.ballSize + this.ballGap;
+                const layerOffset = this.ballSize * 0.12;
+                
+                const boardWidth = config.cols * ballTotalSize + (config.layers - 1) * layerOffset;
+                const boardHeight = config.rows * ballTotalSize + (config.layers - 1) * layerOffset;
+                
+                const offsetX = (areaWidth - boardWidth) / 2;
+                const offsetY = (areaHeight - boardHeight) / 2;
+                
+                // 创建球
+                let ballIndex = 0;
+                for (let layer = 0; layer < config.layers; layer++) {
+                    const layerX = layer * layerOffset;
+                    const layerY = layer * layerOffset;
+                    
+                    for (let row = 0; row < config.rows; row++) {
+                        for (let col = 0; col < config.cols; col++) {
+                            if (ballIndex >= usableBalls) break; // 只创建可用数量的球
+                            
+                            const x = offsetX + col * ballTotalSize + layerX;
+                            const y = offsetY + row * ballTotalSize + layerY;
+                            
+                            const ball = document.createElement('div');
+                            ball.className = 'ball';
+                            ball.style.width = this.ballSize + 'px';
+                            ball.style.height = this.ballSize + 'px';
+                            ball.style.left = x + 'px';
+                            ball.style.top = y + 'px';
+                            ball.style.background = ballData[ballIndex].bg;
+                            ball.style.zIndex = layer + 1;
+                            ball.dataset.color = ballData[ballIndex].name;
+                            ball.dataset.id = ballData[ballIndex].id;
+                            ball.dataset.layer = layer;
+                            ball.dataset.row = row;
+                            ball.dataset.col = col;
+                            ball.textContent = ballData[ballIndex].emoji;
+                            
+                            ball.addEventListener('click', (e) => this.onBallClick(e, ball));
+                            
+                            board.appendChild(ball);
+                            this.balls.push(ball);
+                            ballIndex++;
+                        }
+                    }
+                }
+                
+                console.log(`实际创建球数: ${this.balls.length}`);
+                this.updateClickable();
+            }
+            
+            updateClickable() {
+                this.balls.forEach(ball => {
+                    if (this.isBallBlocked(ball)) {
+                        ball.classList.add('blocked');
+                        ball.classList.remove('clickable');
+                    } else {
+                        ball.classList.remove('blocked');
+                        ball.classList.add('clickable');
+                    }
+                });
+            }
+            
+            isBallBlocked(ball) {
+                const layer = parseInt(ball.dataset.layer);
+                const row = parseInt(ball.dataset.row);
+                const col = parseInt(ball.dataset.col);
+                
+                const maxLayers = CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)].layers;
+                
+                for (let l = layer + 1; l < maxLayers; l++) {
+                    const coveringBalls = this.balls.filter(b => {
+                        const bLayer = parseInt(b.dataset.layer);
+                        const bRow = parseInt(b.dataset.row);
+                        const bCol = parseInt(b.dataset.col);
+                        
+                        if (bLayer !== l) return false;
+                        if (b.classList.contains('removing')) return false;
+                        
+                        const rowDiff = Math.abs(bRow - row);
+                        const colDiff = Math.abs(bCol - col);
+                        
+                        return rowDiff <= 1 && colDiff <= 1;
+                    });
+                    
+                    if (coveringBalls.length > 0) return true;
+                }
+                
+                return false;
+            }
+            
+            onBallClick(e, ball) {
+                if (this.isProcessing || ball.classList.contains('blocked') || ball.classList.contains('removing')) {
+                    return;
+                }
+                
+                if (this.slots.length >= CONFIG.slotCount) {
+                    return;
+                }
+                
+                this.soundManager.playClick();
+                
+                this.history.push({
+                    balls: this.balls.map(b => ({
+                        id: b.dataset.id,
+                        inSlot: this.slots.includes(b),
+                        slotIndex: this.slots.indexOf(b)
+                    })),
+                    slots: [...this.slots],
+                    score: this.score
+                });
+                
+                this.slots.push(ball);
+                this.updateSlots();
+                
+                ball.classList.add('selected');
+                ball.style.position = 'relative';
+                ball.style.left = '0';
+                ball.style.top = '0';
+                
+                this.checkMatch();
+                this.updateClickable();
+                
+                setTimeout(() => this.checkGameState(), 300);
+            }
+            
+            updateSlots() {
+                const slotElements = document.querySelectorAll('.slot');
+                slotElements.forEach((slot, index) => {
+                    slot.innerHTML = '';
+                    slot.classList.remove('filled');
+                    
+                    if (this.slots[index]) {
+                        const ball = this.slots[index];
+                        ball.classList.remove('selected');
+                        ball.style.width = this.ballSize + 'px';
+                        ball.style.height = this.ballSize + 'px';
+                        slot.appendChild(ball);
+                        slot.classList.add('filled');
+                    }
+                });
+            }
+            
+            checkMatch() {
+                const colorCount = {};
+                this.slots.forEach((ball, index) => {
+                    const color = ball.dataset.color;
+                    if (!colorCount[color]) {
+                        colorCount[color] = [];
+                    }
+                    colorCount[color].push(index);
+                });
+                
+                for (const color in colorCount) {
+                    if (colorCount[color].length >= 3) {
+                        this.removeBalls(colorCount[color]);
+                        return;
+                    }
+                }
+            }
+            
+            removeBalls(indices) {
+                this.isProcessing = true;
+                
+                const now = Date.now();
+                if (now - this.lastMatchTime < 3000) {
+                    this.combo++;
+                } else {
+                    this.combo = 1;
+                }
+                this.lastMatchTime = now;
+                
+                if (this.combo > 1) {
+                    this.showCombo(this.combo);
+                    this.soundManager.playCombo();
+                } else {
+                    this.soundManager.playMatch();
+                }
+                
+                const baseScore = 100;
+                const comboBonus = (this.combo - 1) * 50;
+                this.score += (baseScore + comboBonus) * indices.length;
+                
+                indices.forEach(index => {
+                    const ball = this.slots[index];
+                    this.createParticles(ball);
+                });
+                
+                setTimeout(() => {
+                    indices.sort((a, b) => b - a).forEach(index => {
+                        const ball = this.slots[index];
+                        ball.classList.add('removing');
+                        
+                        setTimeout(() => {
+                            ball.remove();
+                            this.balls = this.balls.filter(b => b !== ball);
+                        }, 300);
+                        
+                        this.slots.splice(index, 1);
+                    });
+                    
+                    this.updateSlots();
+                    this.updateUI();
+                    this.isProcessing = false;
+                    
+                    setTimeout(() => this.checkWin(), 400);
+                }, 100);
+            }
+            
+            createParticles(ball) {
+                const rect = ball.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                const color = ball.dataset.color;
+                const bg = CONFIG.colors.find(c => c.name === color)?.bg || '#fff';
+                
+                for (let i = 0; i < 8; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = centerX + 'px';
+                    particle.style.top = centerY + 'px';
+                    particle.style.background = bg;
+                    
+                    const angle = (i / 8) * Math.PI * 2;
+                    const distance = 40 + Math.random() * 40;
+                    particle.style.setProperty('--tx', Math.cos(angle) * distance + 'px');
+                    particle.style.setProperty('--ty', Math.sin(angle) * distance + 'px');
+                    
+                    document.body.appendChild(particle);
+                    setTimeout(() => particle.remove(), 600);
+                }
+            }
+            
+            showCombo(combo) {
+                const comboText = document.getElementById('comboText');
+                const texts = ['', '连击!', '双连击!', '三连击!', '超神!', '无敌!'];
+                comboText.textContent = texts[Math.min(combo, texts.length - 1)];
+                comboText.classList.remove('comboShow');
+                void comboText.offsetWidth;
+                comboText.classList.add('comboShow');
+            }
+            
+            checkGameState() {
+                if (this.slots.length >= CONFIG.slotCount) {
+                    this.soundManager.playLose();
+                    document.getElementById('gameOverModal').classList.add('show');
+                }
+            }
+            
+            checkWin() {
+                if (this.balls.length === 0) {
+                    this.soundManager.playWin();
+                    const levelConfig = CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)];
+                    
+                    if (this.level >= CONFIG.levels.length) {
+                        document.getElementById('winTitle').textContent = '🎉 恭喜通关全部15关！';
+                        document.getElementById('winText').textContent = `最终得分: ${this.score} - 你是真正的球球大师！`;
+                        document.getElementById('nextBtn').textContent = '重新开始';
+                        document.getElementById('nextBtn').onclick = () => {
+                            this.level = 1;
+                            this.score = 0;
+                            document.getElementById('winModal').classList.remove('show');
+                            this.startLevel();
+                        };
+                    } else {
+                        document.getElementById('winTitle').textContent = `恭喜通过第 ${this.level} 关！`;
+                        document.getElementById('winText').textContent = `关卡: ${levelConfig.name} | 得分: ${this.score}`;
+                        document.getElementById('nextBtn').textContent = '下一关';
+                        document.getElementById('nextBtn').onclick = () => this.nextLevel();
+                    }
+                    
+                    document.getElementById('winModal').classList.add('show');
+                }
+            }
+            
+            useTool(type) {
+                if (this.tools[type] <= 0) return;
+                
+                switch(type) {
+                    case 'shuffle':
+                        this.shuffleBalls();
+                        break;
+                    case 'undo':
+                        this.undo();
+                        break;
+                    case 'hint':
+                        this.showHint();
+                        break;
+                }
+                
+                this.tools[type]--;
+                this.updateUI();
+            }
+            
+            shuffleBalls() {
+                const clickableBalls = this.balls.filter(b => !b.classList.contains('blocked') && !this.slots.includes(b));
+                const colors = clickableBalls.map(b => b.dataset.color);
+                
+                for (let i = colors.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [colors[i], colors[j]] = [colors[j], colors[i]];
+                }
+                
+                clickableBalls.forEach((ball, index) => {
+                    const newColor = colors[index];
+                    const colorData = CONFIG.colors.find(c => c.name === newColor);
+                    ball.dataset.color = newColor;
+                    ball.style.background = colorData.bg;
+                    ball.textContent = colorData.emoji;
+                });
+            }
+            
+            undo() {
+                if (this.history.length === 0) return;
+                
+                const lastState = this.history.pop();
+                this.slots = lastState.slots;
+                this.updateSlots();
+                this.score = lastState.score;
+                this.updateUI();
+            }
+            
+            showHint() {
+                const clickableBalls = this.balls.filter(b => !b.classList.contains('blocked') && !this.slots.includes(b));
+                const colorCount = {};
+                
+                this.slots.forEach(ball => {
+                    const color = ball.dataset.color;
+                    colorCount[color] = (colorCount[color] || 0) + 1;
+                });
+                
+                for (const color in colorCount) {
+                    if (colorCount[color] >= 2) {
+                        const matchingBalls = clickableBalls.filter(b => b.dataset.color === color);
+                        if (matchingBalls.length > 0) {
+                            matchingBalls[0].style.animation = 'bounce 0.5s ease-in-out 3';
+                            setTimeout(() => {
+                                matchingBalls[0].style.animation = '';
+                            }, 1500);
+                            return;
+                        }
+                    }
+                }
+                
+                const colorCount2 = {};
+                clickableBalls.forEach(ball => {
+                    const color = ball.dataset.color;
+                    colorCount2[color] = (colorCount2[color] || 0) + 1;
+                });
+                
+                let maxColor = '';
+                let maxCount = 0;
+                for (const color in colorCount2) {
+                    if (colorCount2[color] > maxCount) {
+                        maxCount = colorCount2[color];
+                        maxColor = color;
+                    }
+                }
+                
+                if (maxColor) {
+                    const matchingBalls = clickableBalls.filter(b => b.dataset.color === maxColor);
+                    matchingBalls.slice(0, 2).forEach(ball => {
+                        ball.style.animation = 'bounce 0.5s ease-in-out 3';
+                        setTimeout(() => {
+                            ball.style.animation = '';
+                        }, 1500);
+                    });
+                }
+            }
+            
+            updateUI() {
+                document.getElementById('levelInfo').textContent = `第 ${this.level} 关`;
+                document.getElementById('scoreInfo').textContent = `得分: ${this.score}`;
+                document.getElementById('levelProgress').textContent = `关卡 ${this.level}/${CONFIG.levels.length}`;
+                document.getElementById('shuffleCount').textContent = this.tools.shuffle;
+                document.getElementById('undoCount').textContent = this.tools.undo;
+                document.getElementById('hintCount').textContent = this.tools.hint;
+                
+                document.getElementById('shuffleBtn').disabled = this.tools.shuffle <= 0;
+                document.getElementById('undoBtn').disabled = this.tools.undo <= 0;
+                document.getElementById('hintBtn').disabled = this.tools.hint <= 0;
+            }
+            
+            restart() {
+                document.getElementById('gameOverModal').classList.remove('show');
+                this.tools = { shuffle: 3, undo: 3, hint: 3 };
+                this.score = 0;
+                this.combo = 0;
+                this.startLevel();
+            }
+            
+            nextLevel() {
+                document.getElementById('winModal').classList.remove('show');
+                this.level++;
+                this.tools = { shuffle: 3, undo: 3, hint: 3 };
+                this.combo = 0;
+                this.startLevel();
+            }
+        }
+
+        const game = new Game();
+        
+        if (typeof window.CrazyGames !== 'undefined') {
+            window.CrazyGames.SDK.init();
+        }
+    </script>
+</body>
+</html>

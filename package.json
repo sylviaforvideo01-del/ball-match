@@ -1,0 +1,13 @@
+{
+  "name": "ball-match-game",
+  "version": "1.0.0",
+  "description": "球球消消乐 - A match-3 puzzle game with soft bouncy balls",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "build": "echo 'No build step required for vanilla HTML/JS game'"
+  },
+  "keywords": ["game", "puzzle", "match-3", "html5", "crazygames"],
+  "author": "",
+  "license": "MIT"
+}
