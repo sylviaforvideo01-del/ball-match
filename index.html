@@ -454,19 +454,13 @@
             border-radius: 15px;
         }
         
-        /* 音效开关 */
-        #soundToggle {
-            position: absolute;
-            top: 10px;
+        /* 版本号显示 */
+        #versionDisplay {
+            position: fixed;
+            bottom: 5px;
             right: 10px;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: none;
-            background: rgba(255,255,255,0.2);
-            color: white;
-            font-size: 20px;
-            cursor: pointer;
+            color: rgba(255,255,255,0.4);
+            font-size: 10px;
             z-index: 100;
         }
     </style>
@@ -486,6 +480,8 @@
 
     <!-- 游戏容器 -->
     <div id="gameContainer" style="display: none;">
+        <div id="versionDisplay">v1.2</div>
+        
         <button id="soundToggle">🔊</button>
         
         <div id="topBar">
