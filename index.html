@@ -657,32 +657,32 @@
                 { name: 'cyan',   bg: 'radial-gradient(circle at 30% 30%, #00cccc, #009999)', emoji: '💎' },
                 { name: 'pink',   bg: 'radial-gradient(circle at 30% 30%, #ff66cc, #cc3399)', emoji: '💗' }
             ],
-            // 15个关卡配置 - 确保每关球数都是3的倍数
+            // 15个关卡配置 - 确保每关球数和每种颜色数量都是3的倍数
             levels: [
-                // 超简单入门 (1-3)
-                { rows: 3, cols: 4, layers: 1, types: 2, name: "初次体验" },   // 12球 = 3×4
-                { rows: 3, cols: 4, layers: 1, types: 3, name: "简单上手" },   // 12球
-                { rows: 3, cols: 5, layers: 1, types: 3, name: "渐入佳境" },   // 15球
+                // 超简单入门 (1-3) - 12球，2种颜色各6个 / 3种颜色各4个 → 都不对，改成9球
+                { rows: 3, cols: 3, layers: 1, types: 1, name: "初次体验" },   // 9球，1种颜色9个 ✓
+                { rows: 3, cols: 3, layers: 1, types: 2, name: "简单上手" },   // 9球，2种颜色各6个+3个 → 实际6+3=9 ✓
+                { rows: 3, cols: 3, layers: 1, types: 3, name: "渐入佳境" },   // 9球，3种颜色各3个 ✓
                 
-                // 简单关卡 (4-6)
-                { rows: 4, cols: 4, layers: 1, types: 3, name: "稳步前进" },   // 16→15球
-                { rows: 4, cols: 5, layers: 1, types: 3, name: "小有成就" },   // 20→18球
-                { rows: 4, cols: 5, layers: 1, types: 4, name: "初露锋芒" },   // 20→18球
+                // 简单关卡 (4-6) - 12球
+                { rows: 3, cols: 4, layers: 1, types: 2, name: "稳步前进" },   // 12球，2种颜色各6个 ✓
+                { rows: 3, cols: 4, layers: 1, types: 3, name: "小有成就" },   // 12球，3种颜色各4个 → 改成各3个+3个随机
+                { rows: 3, cols: 4, layers: 1, types: 4, name: "初露锋芒" },   // 12球，4种颜色各3个 ✓
                 
-                // 中等关卡 (7-9)
-                { rows: 4, cols: 6, layers: 1, types: 4, name: "挑战开始" },   // 24球
-                { rows: 5, cols: 5, layers: 1, types: 4, name: "继续加油" },   // 25→24球
-                { rows: 5, cols: 6, layers: 1, types: 5, name: "突破自我" },   // 30球
+                // 中等关卡 (7-9) - 15球
+                { rows: 3, cols: 5, layers: 1, types: 3, name: "挑战开始" },   // 15球，3种颜色各5个 → 改成各6个-3个
+                { rows: 3, cols: 5, layers: 1, types: 4, name: "继续加油" },   // 15球，4种颜色各3个+3个 ✓
+                { rows: 3, cols: 5, layers: 1, types: 5, name: "突破自我" },   // 15球，5种颜色各3个 ✓
                 
-                // 进阶关卡 (10-12) - 开始加层数
-                { rows: 4, cols: 5, layers: 2, types: 5, name: " halfway" },   // 40→39球
-                { rows: 5, cols: 5, layers: 2, types: 5, name: "困难重重" },   // 50→48球
-                { rows: 5, cols: 6, layers: 2, types: 6, name: "登峰造极" },   // 60球
+                // 进阶关卡 (10-12) - 18球
+                { rows: 3, cols: 6, layers: 1, types: 4, name: " halfway" },   // 18球，4种颜色各6个-6个 → 各6个
+                { rows: 3, cols: 6, layers: 1, types: 5, name: "困难重重" },   // 18球，5种颜色各3个+3个 ✓
+                { rows: 3, cols: 6, layers: 1, types: 6, name: "登峰造极" },   // 18球，6种颜色各3个 ✓
                 
-                // 困难关卡 (13-15)
-                { rows: 5, cols: 6, layers: 2, types: 6, name: "王者之路" },   // 60球
-                { rows: 6, cols: 6, layers: 2, types: 6, name: "传奇难度" },   // 72球
-                { rows: 6, cols: 6, layers: 3, types: 6, name: "终极挑战" }    // 108球
+                // 困难关卡 (13-15) - 加层数
+                { rows: 4, cols: 5, layers: 1, types: 5, name: "王者之路" },   // 20→18球
+                { rows: 4, cols: 5, layers: 2, types: 5, name: "传奇难度" },   // 40→36球
+                { rows: 5, cols: 6, layers: 2, types: 6, name: "终极挑战" }    // 60球，6种颜色各10个 → 各12个-12个
             ]
         };
 
@@ -798,21 +798,32 @@
                 
                 console.log(`关卡${this.level}: 总球数${totalBalls}, 可用${usableBalls}`);
                 
-                // 生成颜色分布 - 确保每种颜色都是3的倍数
+                // 生成颜色分布 - 确保每种颜色数量严格是3的倍数
                 const colors = CONFIG.colors.slice(0, config.types);
                 const ballData = [];
                 
-                // 计算每种颜色需要多少个球（确保是3的倍数）
-                const ballsPerColorBase = Math.floor(usableBalls / config.types);
-                const remainder = usableBalls - (ballsPerColorBase * config.types);
+                // 计算基础数量（确保是3的倍数）
+                const baseCount = Math.floor(usableBalls / config.types / 3) * 3;
+                let remainingBalls = usableBalls;
                 
-                colors.forEach((color, index) => {
-                    // 前 remainder 种颜色多分配3个球
-                    const count = ballsPerColorBase + (index < remainder / 3 ? 3 : 0);
-                    for (let i = 0; i < count; i++) {
+                // 先给每种颜色分配基础数量
+                colors.forEach(color => {
+                    for (let i = 0; i < baseCount; i++) {
                         ballData.push({ ...color, id: Math.random().toString(36).substr(2, 9) });
                     }
+                    remainingBalls -= baseCount;
                 });
+                
+                // 剩余的球按3个一组分配给前面的颜色
+                let colorIndex = 0;
+                while (remainingBalls >= 3) {
+                    const color = colors[colorIndex % colors.length];
+                    for (let i = 0; i < 3; i++) {
+                        ballData.push({ ...color, id: Math.random().toString(36).substr(2, 9) });
+                    }
+                    remainingBalls -= 3;
+                    colorIndex++;
+                }
                 
                 // 打乱
                 for (let i = ballData.length - 1; i > 0; i--) {
