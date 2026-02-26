@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ball Match 3D v2.6.3</title>
+    <title>Ball Match 3D v2.6.4</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
         body { font-family: 'Microsoft YaHei', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; overflow: hidden; touch-action: none; }
@@ -82,7 +82,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v2.6.3</div>
+        <div id="versionDisplay">v2.6.4</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -215,11 +215,13 @@
                     document.getElementById('startScreen').style.display = 'none'; 
                     document.getElementById('gameContainer').style.display = 'flex'; 
                     this.soundManager.init(); 
-                    // Play a silent tone to unlock audio on mobile
-                    setTimeout(() => {
-                        this.soundManager.resumeAudio();
-                        this.soundManager.playClick();
-                    }, 100);
+                    // 关键：在用户点击开始按钮的第一时间激活音频上下文
+                    if (this.soundManager.audioContext) {
+                        this.soundManager.audioContext.resume().then(() => {
+                            console.log('Playback resumed successfully');
+                            this.soundManager.playClick();
+                        });
+                    }
                     CrazySDK.gameStart();
                     this.startLevel(); 
                 });
@@ -232,10 +234,18 @@
             handleResize() {
                 const gameArea = document.getElementById('gameArea');
                 const levelConfig = CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)];
-                const sizeByWidth = Math.floor(gameArea.clientWidth * 0.95 / (levelConfig.cols + levelConfig.layers * 0.15));
-                const sizeByHeight = Math.floor(gameArea.clientHeight * 0.9 / (levelConfig.rows + levelConfig.layers * 0.15));
-                this.ballSize = Math.max(42, Math.min(65, Math.min(sizeByWidth, sizeByHeight)));
-                this.ballGap = Math.max(3, Math.floor(this.ballSize / 12));
+                
+                // 根据屏幕宽度动态计算球的大小
+                if (window.innerWidth < 600) { // 移动端判断
+                    this.ballSize = Math.floor(window.innerWidth / 7.5); // 动态大小
+                    this.ballGap = 4; // 减小间距
+                } else {
+                    const sizeByWidth = Math.floor(gameArea.clientWidth * 0.95 / (levelConfig.cols + levelConfig.layers * 0.15));
+                    const sizeByHeight = Math.floor(gameArea.clientHeight * 0.9 / (levelConfig.rows + levelConfig.layers * 0.15));
+                    this.ballSize = Math.max(42, Math.min(65, Math.min(sizeByWidth, sizeByHeight)));
+                    this.ballGap = Math.max(3, Math.floor(this.ballSize / 12));
+                }
+                
                 document.querySelectorAll('.slot').forEach(slot => { slot.style.width = this.ballSize + 'px'; slot.style.height = this.ballSize + 'px'; });
                 if (this.balls.length > 0 && document.getElementById('gameContainer').style.display !== 'none') this.startLevel();
             }
