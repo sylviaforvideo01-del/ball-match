@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>球球消消乐 - Ball Match v1.4</title>
+    <title>球球消消乐 - Ball Match v1.5</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
         body { font-family: 'Microsoft YaHei', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; overflow: hidden; touch-action: none; }
@@ -79,7 +79,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v1.3</div>
+        <div id="versionDisplay">v1.5</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="点击音效">🎵</button>
             <button class="soundBtn" id="cheerSoundBtn" title="喝彩音效">🎉</button>
@@ -162,21 +162,21 @@
                 { name: 'brown', bg: 'radial-gradient(circle at 30% 30%, #cc6600, #994400)', emoji: '🟤' }
             ],
             levels: [
-                { rows: 3, cols: 3, layers: 1, types: 1, name: "初次体验" },
-                { rows: 3, cols: 3, layers: 1, types: 2, name: "简单上手" },
-                { rows: 3, cols: 3, layers: 1, types: 3, name: "渐入佳境" },
-                { rows: 3, cols: 3, layers: 1, types: 3, name: "稳步前进" },
-                { rows: 3, cols: 4, layers: 1, types: 3, name: "小有成就" },
-                { rows: 3, cols: 4, layers: 1, types: 4, name: "初露锋芒" },
-                { rows: 3, cols: 4, layers: 1, types: 4, name: "挑战开始" },
-                { rows: 3, cols: 5, layers: 1, types: 4, name: "继续加油" },
-                { rows: 3, cols: 5, layers: 1, types: 5, name: "突破自我" },
-                { rows: 4, cols: 5, layers: 1, types: 5, name: " halfway" },
-                { rows: 4, cols: 5, layers: 1, types: 6, name: "困难重重" },
-                { rows: 4, cols: 6, layers: 1, types: 6, name: "登峰造极" },
-                { rows: 4, cols: 6, layers: 2, types: 7, name: "王者之路" },
-                { rows: 5, cols: 6, layers: 2, types: 8, name: "传奇难度" },
-                { rows: 6, cols: 7, layers: 3, types: 10, name: "终极挑战" }
+                { rows: 3, cols: 5, layers: 1, types: 2, name: "初次体验" },
+                { rows: 3, cols: 5, layers: 1, types: 3, name: "简单上手" },
+                { rows: 3, cols: 5, layers: 2, types: 4, name: "渐入佳境" },
+                { rows: 3, cols: 5, layers: 2, types: 5, name: "稳步前进" },
+                { rows: 4, cols: 5, layers: 2, types: 6, name: "小有成就" },
+                { rows: 4, cols: 6, layers: 3, types: 8, name: "初露锋芒" },
+                { rows: 5, cols: 6, layers: 3, types: 10, name: "挑战开始" },
+                { rows: 5, cols: 6, layers: 4, types: 10, name: "继续加油" },
+                { rows: 6, cols: 7, layers: 5, types: 10, name: "突破自我" },
+                { rows: 6, cols: 7, layers: 6, types: 10, name: "halfway" },
+                { rows: 6, cols: 7, layers: 7, types: 10, name: "困难重重" },
+                { rows: 6, cols: 7, layers: 8, types: 10, name: "登峰造极" },
+                { rows: 6, cols: 7, layers: 9, types: 10, name: "王者之路" },
+                { rows: 6, cols: 7, layers: 10, types: 10, name: "传奇难度" },
+                { rows: 6, cols: 7, layers: 11, types: 10, name: "终极挑战" }
             ]
         };
         class Game {
@@ -353,23 +353,122 @@
                 this.slots = lastState.slots; this.updateSlots(); this.score = lastState.score; this.updateUI();
             }
             showHint() {
-                const clickableBalls = this.balls.filter(b => !b.classList.contains('blocked') && !this.slots.includes(b));
-                const colorCount = {};
-                this.slots.forEach(ball => { const color = ball.dataset.color; colorCount[color] = (colorCount[color] || 0) + 1; });
-                for (const color in colorCount) {
-                    if (colorCount[color] >= 2) {
+                const clickableBalls = this.balls.filter(b => !b.classList.contains('blocked') && !this.slots.includes(b) && !b.classList.contains('removing'));
+                const blockedBalls = this.balls.filter(b => b.classList.contains('blocked') && !this.slots.includes(b) && !b.classList.contains('removing'));
+                
+                // 1. 检查槽位中是否有2个同色，找第3个可点击的球
+                const slotColorCount = {};
+                this.slots.forEach(ball => { 
+                    const color = ball.dataset.color; 
+                    slotColorCount[color] = (slotColorCount[color] || 0) + 1; 
+                });
+                
+                for (const color in slotColorCount) {
+                    if (slotColorCount[color] >= 2) {
                         const matchingBalls = clickableBalls.filter(b => b.dataset.color === color);
-                        if (matchingBalls.length > 0) { matchingBalls[0].style.animation = 'bounce 0.5s ease-in-out 3'; setTimeout(() => matchingBalls[0].style.animation = '', 1500); return; }
+                        if (matchingBalls.length > 0) { 
+                            matchingBalls[0].classList.add('hint'); 
+                            setTimeout(() => matchingBalls[0].classList.remove('hint'), 2000); 
+                            return; 
+                        }
                     }
                 }
-                const colorCount2 = {};
-                clickableBalls.forEach(ball => { const color = ball.dataset.color; colorCount2[color] = (colorCount2[color] || 0) + 1; });
-                let maxColor = '', maxCount = 0;
-                for (const color in colorCount2) { if (colorCount2[color] > maxCount) { maxCount = colorCount2[color]; maxColor = color; } }
-                if (maxColor) {
-                    const matchingBalls = clickableBalls.filter(b => b.dataset.color === maxColor);
-                    matchingBalls.slice(0, 2).forEach(ball => { ball.style.animation = 'bounce 0.5s ease-in-out 3'; setTimeout(() => ball.style.animation = '', 1500); });
+                
+                // 2. 找点击后能显现有助于消除的球
+                // 获取槽位中各颜色数量（包括1个的）
+                const slotColors = Object.keys(slotColorCount);
+                
+                // 检查每个被阻挡的球，点击它是否能释放下方有助于消除的球
+                for (const blockedBall of blockedBalls) {
+                    // 模拟点击这个球后，哪些球会变成可点击
+                    const wouldUnblock = this.getWouldUnblockBalls(blockedBall);
+                    
+                    // 检查这些新释放的球是否有能帮助消除的
+                    for (const unblockedBall of wouldUnblock) {
+                        const color = unblockedBall.dataset.color;
+                        // 如果槽位已有这个颜色，点击后能帮助消除
+                        if (slotColors.includes(color)) {
+                            blockedBall.classList.add('hint');
+                            setTimeout(() => blockedBall.classList.remove('hint'), 2000);
+                            return;
+                        }
+                        // 或者这个颜色在可点击球中有2个（凑3个）
+                        const sameColorClickable = clickableBalls.filter(b => b.dataset.color === color && b !== blockedBall).length;
+                        if (sameColorClickable >= 2) {
+                            blockedBall.classList.add('hint');
+                            setTimeout(() => blockedBall.classList.remove('hint'), 2000);
+                            return;
+                        }
+                    }
                 }
+                
+                // 3. 检查是否有任何球能帮助消除（包括凑3个新的）
+                const clickableColorCount = {};
+                clickableBalls.forEach(ball => { 
+                    const color = ball.dataset.color; 
+                    clickableColorCount[color] = (clickableColorCount[color] || 0) + 1; 
+                });
+                
+                // 找可点击球中数量>=3的颜色
+                for (const color in clickableColorCount) {
+                    if (clickableColorCount[color] >= 3) {
+                        const matchingBalls = clickableBalls.filter(b => b.dataset.color === color);
+                        matchingBalls.slice(0, 3).forEach(ball => { 
+                            ball.classList.add('hint'); 
+                            setTimeout(() => ball.classList.remove('hint'), 2000); 
+                        });
+                        return;
+                    }
+                }
+                
+                // 4. 没有任何有用的球，自动打乱
+                this.shuffleBalls();
+                this.showComboText('自动打乱!', '#FFD700');
+            }
+            
+            getWouldUnblockBalls(ball) {
+                const layer = parseInt(ball.dataset.layer);
+                const row = parseInt(ball.dataset.row);
+                const col = parseInt(ball.dataset.col);
+                
+                // 找到所有被这个球阻挡的球（即layer-1层，在3x3范围内的球）
+                const blockedByThis = this.balls.filter(b => {
+                    if (b === ball || b.classList.contains('removing')) return false;
+                    const bLayer = parseInt(b.dataset.layer);
+                    const bRow = parseInt(b.dataset.row);
+                    const bCol = parseInt(b.dataset.col);
+                    // 这个球在下一层，且在3x3范围内
+                    return bLayer === layer - 1 && 
+                           Math.abs(bRow - row) <= 1 && 
+                           Math.abs(bCol - col) <= 1;
+                });
+                
+                // 检查这些球在移除当前球后是否真的变成可点击
+                return blockedByThis.filter(b => {
+                    // 检查是否还有其他球阻挡它
+                    const bLayer = parseInt(b.dataset.layer);
+                    const bRow = parseInt(b.dataset.row);
+                    const bCol = parseInt(b.dataset.col);
+                    
+                    for (let l = bLayer + 1; l < CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)].layers; l++) {
+                        const covering = this.balls.filter(other => {
+                            if (other === ball || other.classList.contains('removing')) return false;
+                            return parseInt(other.dataset.layer) === l && 
+                                   Math.abs(parseInt(other.dataset.row) - bRow) <= 1 && 
+                                   Math.abs(parseInt(other.dataset.col) - bCol) <= 1;
+                        });
+                        if (covering.length > 0) return false;
+                    }
+                    return true;
+                });
+            }
+            
+            showComboText(text, color) {
+                const comboText = document.getElementById('comboText');
+                comboText.textContent = text;
+                comboText.style.color = color;
+                comboText.classList.add('comboShow');
+                setTimeout(() => comboText.classList.remove('comboShow'), 1000);
             }
             updateUI() {
                 document.getElementById('levelInfo').textContent = `第 ${this.level} 关`;
