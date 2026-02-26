@@ -83,7 +83,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v2.8.8</div>
+        <div id="versionDisplay">v2.8.9</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -456,23 +456,23 @@
                         ball.classList.remove('blocked');
                         ball.classList.remove('clickable');
                     } else if (isBlocked) {
-                        // 被阻挡的球 - 只显示紧邻下一层的，更深层隐藏
-                        const blockingLayer = this.getBlockingLayer(ball);
-                        if (blockingLayer === layer + 1) {
-                            // 被紧邻下一层阻挡 - 半透明显示
+                        // 被阻挡的球 - 根据与顶层的关系决定显示
+                        const layerDiff = layer - topLayer;
+                        if (layerDiff === -1) {
+                            // 紧邻顶层下方（下一层）- 半透明显示
                             ball.classList.add('blocked');
                             ball.classList.remove('clickable');
-                            ball.style.opacity = '0.5';
+                            ball.style.opacity = '0.4';
                             ball.style.visibility = 'visible';
                         } else {
-                            // 被更深层阻挡 - 完全隐藏
+                            // 更深层 - 完全隐藏
                             ball.classList.add('blocked');
                             ball.classList.remove('clickable');
                             ball.style.opacity = '0';
                             ball.style.visibility = 'hidden';
                         }
                     } else {
-                        // 可点击的球
+                        // 可点击的球（当前顶层）- 完全可见
                         ball.classList.remove('blocked');
                         ball.classList.add('clickable');
                         ball.style.opacity = '1';
