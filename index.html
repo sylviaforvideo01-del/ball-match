@@ -82,7 +82,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v2.8.4</div>
+        <div id="versionDisplay">v2.8.5</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -776,16 +776,16 @@
                 this.updateUI();
             }
             showHint() {
-                const clickableBalls = this.balls.filter(b => !b.classList.contains('blocked') && !this.slots.includes(b) && !b.classList.contains('removing'));
-                const blockedBalls = this.balls.filter(b => b.classList.contains('blocked') && !this.slots.includes(b) && !b.classList.contains('removing'));
+                const clickableBalls = this.balls.filter(b => !b.classList.contains('blocked') && !this.slots.includes(b) && !b.classList.contains('removing') && b.style.visibility !== 'hidden');
                 
-                // 1. 检查槽位中是否有2个同色，找第3个可点击的球
+                // 统计槽位中各颜色数量
                 const slotColorCount = {};
                 this.slots.forEach(ball => { 
                     const color = ball.dataset.color; 
                     slotColorCount[color] = (slotColorCount[color] || 0) + 1; 
                 });
                 
+                // 1. 优先：槽位有2个同色，找第3个可点击的球
                 for (const color in slotColorCount) {
                     if (slotColorCount[color] >= 2) {
                         const matchingBalls = clickableBalls.filter(b => b.dataset.color === color);
@@ -797,42 +797,27 @@
                     }
                 }
                 
-                // 2. 找点击后能显现有助于消除的球
-                // 获取槽位中各颜色数量（包括1个的）
-                const slotColors = Object.keys(slotColorCount);
-                
-                // 检查每个被阻挡的球，点击它是否能释放下方有助于消除的球
-                for (const blockedBall of blockedBalls) {
-                    // 模拟点击这个球后，哪些球会变成可点击
-                    const wouldUnblock = this.getWouldUnblockBalls(blockedBall);
-                    
-                    // 检查这些新释放的球是否有能帮助消除的
-                    for (const unblockedBall of wouldUnblock) {
-                        const color = unblockedBall.dataset.color;
-                        // 如果槽位已有这个颜色，点击后能帮助消除
-                        if (slotColors.includes(color)) {
-                            blockedBall.classList.add('hint');
-                            setTimeout(() => blockedBall.classList.remove('hint'), 2000);
-                            return;
-                        }
-                        // 或者这个颜色在可点击球中有2个（凑3个）
-                        const sameColorClickable = clickableBalls.filter(b => b.dataset.color === color && b !== blockedBall).length;
-                        if (sameColorClickable >= 2) {
-                            blockedBall.classList.add('hint');
-                            setTimeout(() => blockedBall.classList.remove('hint'), 2000);
-                            return;
+                // 2. 其次：槽位有1个，找另外2个可点击的同色球
+                for (const color in slotColorCount) {
+                    if (slotColorCount[color] === 1) {
+                        const matchingBalls = clickableBalls.filter(b => b.dataset.color === color);
+                        if (matchingBalls.length >= 2) { 
+                            matchingBalls.slice(0, 2).forEach(ball => { 
+                                ball.classList.add('hint'); 
+                                setTimeout(() => ball.classList.remove('hint'), 2000); 
+                            });
+                            return; 
                         }
                     }
                 }
                 
-                // 3. 检查是否有任何球能帮助消除（包括凑3个新的）
+                // 3. 最后：找棋盘上3个同色的可点击球
                 const clickableColorCount = {};
                 clickableBalls.forEach(ball => { 
                     const color = ball.dataset.color; 
                     clickableColorCount[color] = (clickableColorCount[color] || 0) + 1; 
                 });
                 
-                // 找可点击球中数量>=3的颜色
                 for (const color in clickableColorCount) {
                     if (clickableColorCount[color] >= 3) {
                         const matchingBalls = clickableBalls.filter(b => b.dataset.color === color);
@@ -844,46 +829,9 @@
                     }
                 }
                 
-                // 4. 没有任何有用的球，自动打乱
+                // 4. 没有任何可消除的组合，自动打乱
                 this.shuffleBalls();
                 this.showComboText('Auto Shuffle!', '#FFD700');
-            }
-            
-            getWouldUnblockBalls(ball) {
-                const layer = parseInt(ball.dataset.layer);
-                const row = parseInt(ball.dataset.row);
-                const col = parseInt(ball.dataset.col);
-                
-                // 找到所有被这个球阻挡的球（即layer-1层，在3x3范围内的球）
-                const blockedByThis = this.balls.filter(b => {
-                    if (b === ball || b.classList.contains('removing')) return false;
-                    const bLayer = parseInt(b.dataset.layer);
-                    const bRow = parseInt(b.dataset.row);
-                    const bCol = parseInt(b.dataset.col);
-                    // 这个球在下一层，且在3x3范围内
-                    return bLayer === layer - 1 && 
-                           Math.abs(bRow - row) <= 1 && 
-                           Math.abs(bCol - col) <= 1;
-                });
-                
-                // 检查这些球在移除当前球后是否真的变成可点击
-                return blockedByThis.filter(b => {
-                    // 检查是否还有其他球阻挡它
-                    const bLayer = parseInt(b.dataset.layer);
-                    const bRow = parseInt(b.dataset.row);
-                    const bCol = parseInt(b.dataset.col);
-                    
-                    for (let l = bLayer + 1; l < CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)].layers; l++) {
-                        const covering = this.balls.filter(other => {
-                            if (other === ball || other.classList.contains('removing')) return false;
-                            return parseInt(other.dataset.layer) === l && 
-                                   Math.abs(parseInt(other.dataset.row) - bRow) <= 1 && 
-                                   Math.abs(parseInt(other.dataset.col) - bCol) <= 1;
-                        });
-                        if (covering.length > 0) return false;
-                    }
-                    return true;
-                });
             }
             
             showComboText(text, color) {
@@ -915,6 +863,10 @@
                 this.startLevel(); 
             }
             nextLevel() { 
+                // 防止重复点击
+                if (this.isProcessing) return;
+                this.isProcessing = true;
+                
                 document.getElementById('winModal').classList.remove('show'); 
                 CrazySDK.levelComplete(this.level);
                 // Show ad between levels (every 3 levels)
@@ -926,6 +878,7 @@
                         this.hasInteracted = false; 
                         this.hideTutorial(); 
                         this.startLevel();
+                        this.isProcessing = false;
                     });
                 } else {
                     this.level++; 
@@ -934,6 +887,8 @@
                     this.hasInteracted = false; 
                     this.hideTutorial(); 
                     this.startLevel();
+                    // 延迟重置 isProcessing
+                    setTimeout(() => { this.isProcessing = false; }, 500);
                 }
             }
         }
