@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ball Match 3D v2.4.2</title>
+    <title>Ball Match 3D v2.4.3</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
         body { font-family: 'Microsoft YaHei', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; overflow: hidden; touch-action: none; }
@@ -20,7 +20,7 @@
         .ball.clickable:hover { transform: scale(1.08); filter: brightness(1.15); }
         .ball.blocked { opacity: 0.75; filter: brightness(0.75) grayscale(0.3); cursor: not-allowed; }
         .ball.selected { animation: bounce 0.5s ease-in-out infinite; box-shadow: inset -3px -3px 8px rgba(255,255,255,0.95), inset 3px 3px 8px rgba(255,255,255,0.6), 0 0 25px rgba(255,255,255,0.7), 0 0 0 4px rgba(255,255,255,0.5); }
-        .ball[data-color="white"] { box-shadow: inset -3px -3px 8px rgba(255,255,255,1), inset 3px 3px 8px rgba(200,200,200,0.8), inset 2px 2px 6px rgba(0,0,0,0.1), 0 6px 12px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2), 0 0 0 2px rgba(180,180,180,0.5); }
+        .ball[data-color="white"] { box-shadow: inset -3px -3px 8px rgba(255,255,255,1), inset 3px 3px 8px rgba(200,200,200,0.8), inset 2px 2px 6px rgba(0,0,0,0.1), 0 6px 12px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2); }
         .ball[data-color="white"]::before { background: radial-gradient(ellipse at center, rgba(255,255,255,1) 0%, rgba(255,255,255,0.8) 40%, transparent 70%); }
         .ball[data-color="white"]::after { background: radial-gradient(ellipse at center, rgba(255,255,255,0.9) 0%, transparent 70%); }
         .ball.removing { animation: popOut 0.3s ease-out forwards; }
@@ -82,7 +82,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v2.4.2</div>
+        <div id="versionDisplay">v2.4.3</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
