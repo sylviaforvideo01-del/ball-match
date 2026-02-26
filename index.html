@@ -83,7 +83,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-                                                                    <div id="versionDisplay">v2.9.22</div>
+                                                                    <div id="versionDisplay">v2.9.23</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -450,7 +450,7 @@
                 for (let layer = 0; layer < config.layers; layer++) {
                     for (let row = 0; row < config.rows; row++) {
                         for (let col = 0; col < config.cols; col++) {
-                            if (ballIndex >= usableBalls) break;
+                            if (ballIndex >= usableBalls || ballIndex >= ballData.length) break;
                             const ball = document.createElement('div');
                             ball.className = 'ball';
                             ball.style.width = this.ballSize + 'px';
@@ -703,15 +703,11 @@
                     const levelConfig = CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)];
                     const nextBtn = document.getElementById('nextBtn');
                     
-                    // 移除旧的事件监听器 - 使用新元素替换
-                    const newNextBtn = nextBtn.cloneNode(true);
-                    nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
-                    
                     if (this.level >= CONFIG.levels.length) {
                         document.getElementById('winTitle').textContent = '🎉 All 15 Levels Cleared!';
                         document.getElementById('winText').textContent = `Final Score: ${this.score}`;
-                        newNextBtn.textContent = 'Restart';
-                        newNextBtn.onclick = () => { 
+                        nextBtn.textContent = 'Restart';
+                        nextBtn.onclick = () => { 
                             this.level = 1; 
                             this.score = 0; 
                             document.getElementById('winModal').classList.remove('show'); 
@@ -720,8 +716,8 @@
                     } else {
                         document.getElementById('winTitle').textContent = `Level ${this.level} Complete!`;
                         document.getElementById('winText').textContent = `Level: ${levelConfig.name} | Score: ${this.score}`;
-                        newNextBtn.textContent = 'Next Level';
-                        newNextBtn.onclick = () => {
+                        nextBtn.textContent = 'Next Level';
+                        nextBtn.onclick = () => {
                             console.log('Next Level button clicked');
                             document.getElementById('winModal').classList.remove('show');
                             this.nextLevel();
