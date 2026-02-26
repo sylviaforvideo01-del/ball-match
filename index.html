@@ -98,7 +98,7 @@
 
     <div id="gameContainer" style="display: none;">
         <button id="exitBtn">Exit</button>
-        <div id="versionDisplay">v3.0.5</div>
+        <div id="versionDisplay">v3.0.6</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -392,57 +392,51 @@
             }
 
             showAdminPanel() {
+                // 移除已存在的管理者面板
+                const existingModal = document.getElementById('adminModal');
+                if (existingModal) existingModal.remove();
+
                 const modal = document.createElement('div');
                 modal.id = 'adminModal';
                 modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:5000;';
 
                 let levelButtons = '';
                 for (let i = 1; i <= CONFIG.levels.length; i++) {
-                    levelButtons += `<button class="levelBtn" data-level="${i}">${i}</button>`;
+                    levelButtons += `<button class="levelBtn" data-level="${i}" style="padding:15px;border:none;border-radius:10px;background:linear-gradient(145deg,#667eea,#764ba2);color:white;cursor:pointer;font-weight:bold;font-size:18px;">${i}</button>`;
                 }
 
                 modal.innerHTML = `
                     <div style="background:linear-gradient(145deg,#ff6b6b,#ee5a5a);padding:35px;border-radius:25px;text-align:center;color:white;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
                         <h3 style="margin-bottom:15px;font-size:24px;text-shadow:2px 2px 4px rgba(0,0,0,0.3);">👑 Admin Panel</h3>
                         <p style="margin-bottom:20px;opacity:0.9;font-size:14px;">Welcome, sylviaguanlizhe<br>Select a level to jump to</p>
-                        <div class="levelSelect">${levelButtons}</div>
+                        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;max-height:300px;overflow-y:auto;padding:10px;">${levelButtons}</div>
                         <button id="closeAdminBtn" style="margin-top:20px;padding:10px 24px;border:none;border-radius:25px;background:rgba(255,255,255,0.2);color:white;cursor:pointer;font-size:14px;">Close</button>
                     </div>
                 `;
                 document.body.appendChild(modal);
 
-                // 使用事件委托，确保按钮点击有效
-                const levelSelect = modal.querySelector('.levelSelect');
-                levelSelect.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('levelBtn')) {
-                        const level = parseInt(e.target.dataset.level);
+                // 直接为每个按钮绑定点击事件
+                modal.querySelectorAll('.levelBtn').forEach(btn => {
+                    btn.onclick = () => {
+                        const level = parseInt(btn.dataset.level);
                         console.log('Admin selected level:', level);
                         this.level = level;
                         modal.remove();
-                        this.showUserInfo();
                         this.startGame();
-                    }
+                    };
                 });
 
-                document.getElementById('closeAdminBtn').addEventListener('click', () => {
+                document.getElementById('closeAdminBtn').onclick = () => {
                     modal.remove();
                     this.showUsernameModal();
-                });
+                };
             }
 
             showUserInfo() {
                 // 移除已存在的用户信息
                 const existing = document.getElementById('userInfo');
                 if (existing) existing.remove();
-
-                // 只在非管理员模式下显示用户信息
-                if (this.username && !this.isAdmin) {
-                    const userInfo = document.createElement('div');
-                    userInfo.id = 'userInfo';
-                    userInfo.className = 'userInfo';
-                    userInfo.innerHTML = `👤 ${this.username} | Level ${this.level}`;
-                    document.body.appendChild(userInfo);
-                }
+                // 不显示用户信息，避免遮挡关卡信息
             }
 
             startGame() {
