@@ -83,7 +83,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-                          <div id="versionDisplay">v2.9.6</div>
+                             <div id="versionDisplay">v2.9.7</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -404,8 +404,15 @@
                 const totalBalls = config.rows * config.cols * config.layers;
                 const usableBalls = Math.floor(totalBalls / 3) * 3;
                 const colors = CONFIG.colors.slice(0, config.types);
+                
+                // 安全检查：确保有足够的颜色
+                if (colors.length === 0) {
+                    console.error('No colors available');
+                    return;
+                }
+                
                 const ballData = [];
-                const baseCount = Math.floor(usableBalls / config.types / 3) * 3;
+                const baseCount = Math.max(0, Math.floor(usableBalls / colors.length / 3) * 3);
                 let remaining = usableBalls;
                 colors.forEach(color => { for (let i = 0; i < baseCount; i++) ballData.push({ ...color, id: Math.random().toString(36).substr(2, 9) }); remaining -= baseCount; });
                 let colorIdx = 0;
