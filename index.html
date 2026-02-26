@@ -82,7 +82,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v2.8.5</div>
+        <div id="versionDisplay">v2.8.6</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -776,7 +776,8 @@
                 this.updateUI();
             }
             showHint() {
-                const clickableBalls = this.balls.filter(b => !b.classList.contains('blocked') && !this.slots.includes(b) && !b.classList.contains('removing') && b.style.visibility !== 'hidden');
+                // 获取所有可点击的球（包括被隐藏的，因为hint需要知道哪些球存在）
+                const clickableBalls = this.balls.filter(b => !b.classList.contains('blocked') && !this.slots.includes(b) && !b.classList.contains('removing'));
                 
                 // 统计槽位中各颜色数量
                 const slotColorCount = {};
@@ -791,7 +792,11 @@
                         const matchingBalls = clickableBalls.filter(b => b.dataset.color === color);
                         if (matchingBalls.length > 0) { 
                             matchingBalls[0].classList.add('hint'); 
-                            setTimeout(() => matchingBalls[0].classList.remove('hint'), 2000); 
+                            matchingBalls[0].style.visibility = 'visible'; // 确保提示的球可见
+                            setTimeout(() => {
+                                matchingBalls[0].classList.remove('hint');
+                                this.updateClickable(); // 恢复原始可见性
+                            }, 2000); 
                             return; 
                         }
                     }
@@ -804,8 +809,14 @@
                         if (matchingBalls.length >= 2) { 
                             matchingBalls.slice(0, 2).forEach(ball => { 
                                 ball.classList.add('hint'); 
-                                setTimeout(() => ball.classList.remove('hint'), 2000); 
+                                ball.style.visibility = 'visible';
                             });
+                            setTimeout(() => {
+                                matchingBalls.slice(0, 2).forEach(ball => {
+                                    ball.classList.remove('hint');
+                                });
+                                this.updateClickable();
+                            }, 2000); 
                             return; 
                         }
                     }
@@ -823,8 +834,14 @@
                         const matchingBalls = clickableBalls.filter(b => b.dataset.color === color);
                         matchingBalls.slice(0, 3).forEach(ball => { 
                             ball.classList.add('hint'); 
-                            setTimeout(() => ball.classList.remove('hint'), 2000); 
+                            ball.style.visibility = 'visible';
                         });
+                        setTimeout(() => {
+                            matchingBalls.slice(0, 3).forEach(ball => {
+                                ball.classList.remove('hint');
+                            });
+                            this.updateClickable();
+                        }, 2000); 
                         return;
                     }
                 }
