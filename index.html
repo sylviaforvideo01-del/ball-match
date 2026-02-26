@@ -80,7 +80,7 @@
         #soundControls { position: fixed; top: 75px; right: 10px; display: flex; gap: 8px; z-index: 200; }
         .soundBtn { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.4); background: linear-gradient(145deg, #667eea, #764ba2); color: white; font-size: 16px; cursor: pointer; box-shadow: 0 4px 12px rgba(102,126,234,0.4); transition: all 0.2s; }
         .soundBtn:hover { transform: scale(1.15); box-shadow: 0 8px 25px rgba(102,126,234,0.7), inset 0 2px 4px rgba(255,255,255,0.4); }
-        #exitBtn { position: fixed; top: 10px; right: 10px; padding: 8px 16px; border: none; border-radius: 20px; background: linear-gradient(145deg, #ff4757, #ff3838); color: white; font-size: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(255,71,87,0.4); transition: all 0.2s; z-index: 201; }
+        #exitBtn { position: fixed; top: 115px; right: 10px; padding: 8px 16px; border: none; border-radius: 20px; background: linear-gradient(145deg, #ff4757, #ff3838); color: white; font-size: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(255,71,87,0.4); transition: all 0.2s; z-index: 201; }
         #exitBtn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(255,71,87,0.6); }
     </style>
 </head>
@@ -98,7 +98,7 @@
 
     <div id="gameContainer" style="display: none;">
         <button id="exitBtn">Exit</button>
-        <div id="versionDisplay">v3.0.4</div>
+        <div id="versionDisplay">v3.0.5</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -435,13 +435,12 @@
                 const existing = document.getElementById('userInfo');
                 if (existing) existing.remove();
 
-                if (this.username) {
+                // 只在非管理员模式下显示用户信息
+                if (this.username && !this.isAdmin) {
                     const userInfo = document.createElement('div');
                     userInfo.id = 'userInfo';
                     userInfo.className = 'userInfo';
-                    userInfo.innerHTML = this.isAdmin
-                        ? `👑 ${this.username} | 关卡 ${this.level}`
-                        : `👤 ${this.username} | 关卡 ${this.level}`;
+                    userInfo.innerHTML = `👤 ${this.username} | Level ${this.level}`;
                     document.body.appendChild(userInfo);
                 }
             }
@@ -1222,39 +1221,20 @@
                 document.getElementById('winModal').classList.remove('show');
                 CrazySDK.levelComplete(this.level);
 
-                // 定义进入下一关的函数
-                const goToNextLevel = () => {
-                    this.level++;
-                    console.log('Starting level', this.level);
-                    this.tools = { shuffle: 3, undo: 3, hint: 3 };
-                    this.combo = 0;
-                    this.hasInteracted = false;
-                    this.hideTutorial();
-                    // 更新用户信息显示
-                    this.showUserInfo();
-                    // 延迟重新计算球大小，确保 DOM 已更新
-                    setTimeout(() => {
-                        this.handleResize();
-                        this.startLevel();
-                    }, 100);
-                };
-
-                // Show ad between levels (every 3 levels)
-                if (this.level % 3 === 0) {
-                    console.log('Showing ad for level', this.level);
-                    // 设置超时，确保即使广告不加载也能进入下一关
-                    const adTimeout = setTimeout(() => {
-                        console.log('Ad timeout, proceeding to next level');
-                        goToNextLevel();
-                    }, 5000); // 5秒超时
-
-                    CrazySDK.requestAd(() => {
-                        clearTimeout(adTimeout);
-                        goToNextLevel();
-                    });
-                } else {
-                    goToNextLevel();
-                }
+                // 直接进入下一关，不显示广告
+                this.level++;
+                console.log('Starting level', this.level);
+                this.tools = { shuffle: 3, undo: 3, hint: 3 };
+                this.combo = 0;
+                this.hasInteracted = false;
+                this.hideTutorial();
+                // 更新用户信息显示
+                this.showUserInfo();
+                // 延迟重新计算球大小，确保 DOM 已更新
+                setTimeout(() => {
+                    this.handleResize();
+                    this.startLevel();
+                }, 100);
             }
         }
         // CrazyGames SDK Integration
