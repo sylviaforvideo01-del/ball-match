@@ -379,6 +379,7 @@
             undo() {
                 if (this.history.length === 0) return;
                 const lastState = this.history.pop();
+                const board = document.getElementById('board');
                 // Restore balls to their positions
                 this.balls.forEach(ball => {
                     const savedBall = lastState.balls.find(b => b.id === ball.dataset.id);
@@ -390,10 +391,16 @@
                             // Ball was on board, remove from slot if present
                             const slotIndex = this.slots.indexOf(ball);
                             if (slotIndex > -1) this.slots.splice(slotIndex, 1);
+                            // Move ball back to board if it's in a slot
+                            if (ball.parentElement && ball.parentElement.classList.contains('slot')) {
+                                board.appendChild(ball);
+                            }
                             // Restore position
                             ball.style.position = 'absolute';
                             ball.style.left = savedBall.left;
                             ball.style.top = savedBall.top;
+                            ball.style.width = this.ballSize + 'px';
+                            ball.style.height = this.ballSize + 'px';
                             ball.classList.remove('selected');
                         }
                     }

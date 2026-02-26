@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ball Colors Preview</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Microsoft YaHei', sans-serif; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center; 
+            padding: 20px;
+        }
+        h1 { color: white; margin-bottom: 30px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .balls-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+            max-width: 800px;
+        }
+        .ball-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .ball {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            box-shadow: inset -4px -4px 10px rgba(255,255,255,0.9), 
+                        inset 4px 4px 10px rgba(255,255,255,0.5), 
+                        inset 3px 3px 8px rgba(0,0,0,0.15), 
+                        0 8px 16px rgba(0,0,0,0.4), 
+                        0 3px 6px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        .ball::before {
+            content: '';
+            position: absolute;
+            top: 8%;
+            left: 15%;
+            width: 28%;
+            height: 20%;
+            background: radial-gradient(ellipse at center, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.5) 50%, transparent 70%);
+            border-radius: 50%;
+            transform: rotate(-25deg);
+        }
+        .ball-name {
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        .ball-hex {
+            color: rgba(255,255,255,0.7);
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 Ball Colors Preview (v1.8)</h1>
+    <div class="balls-container">
+        <div class="ball-wrapper">
+            <div class="ball" style="background: radial-gradient(circle at 30% 30%, #ff1a1a, #b30000);">🔴</div>
+            <div class="ball-name">Red</div>
+            <div class="ball-hex">#ff1a1a → #b30000</div>
+        </div>
+        <div class="ball-wrapper">
+            <div class="ball" style="background: radial-gradient(circle at 30% 30%, #ffaa00, #cc6600);">🟠</div>
+            <div class="ball-name">Orange</div>
+            <div class="ball-hex">#ffaa00 → #cc6600</div>
+        </div>
+        <div class="ball-wrapper">
+            <div class="ball" style="background: radial-gradient(circle at 30% 30%, #ffdd33, #ff9900);">🟡</div>
+            <div class="ball-name">Yellow</div>
+            <div class="ball-hex">#ffdd33 → #ff9900</div>
+        </div>
+        <div class="ball-wrapper">
+            <div class="ball" style="background: radial-gradient(circle at 30% 30%, #ccff00, #88aa00);">🍀</div>
+            <div class="ball-name">Lime</div>
+            <div class="ball-hex">#ccff00 → #88aa00</div>
+        </div>
+        <div class="ball-wrapper">
+            <div class="ball" style="background: radial-gradient(circle at 30% 30%, #00e600, #009900);">🟢</div>
+            <div class="ball-name">Green</div>
+            <div class="ball-hex">#00e600 → #009900</div>
+        </div>
+        <div class="ball-wrapper">
+            <div class="ball" style="background: radial-gradient(circle at 30% 30%, #00ffff, #00aaaa);">💎</div>
+            <div class="ball-name">Cyan</div>
+            <div class="ball-hex">#00ffff → #00aaaa</div>
+        </div>
+        <div class="ball-wrapper">
+            <div class="ball" style="background: radial-gradient(circle at 30% 30%, #3388ff, #0044cc);">🔵</div>
+            <div class="ball-name">Blue</div>
+            <div class="ball-hex">#3388ff → #0044cc</div>
+        </div>
+        <div class="ball-wrapper">
+            <div class="ball" style="background: radial-gradient(circle at 30% 30%, #aa44ff, #6600cc);">🟣</div>
+            <div class="ball-name">Purple</div>
+            <div class="ball-hex">#aa44ff → #6600cc</div>
+        </div>
+        <div class="ball-wrapper">
+            <div class="ball" style="background: radial-gradient(circle at 30% 30%, #ff88dd, #cc3399);">💗</div>
+            <div class="ball-name">Pink</div>
+            <div class="ball-hex">#ff88dd → #cc3399</div>
+        </div>
+        <div class="ball-wrapper">
+            <div class="ball" style="background: radial-gradient(circle at 30% 30%, #8b4513, #5c2e0c);">🟤</div>
+            <div class="ball-name">Brown</div>
+            <div class="ball-hex">#8b4513 → #5c2e0c</div>
+        </div>
+    </div>
+</body>
+</html>
