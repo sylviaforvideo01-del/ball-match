@@ -24,6 +24,7 @@
         .ball[data-color="white"]::before { background: radial-gradient(ellipse at center, rgba(255,255,255,1) 0%, rgba(255,255,255,0.8) 40%, transparent 70%); }
         .ball[data-color="white"]::after { background: radial-gradient(ellipse at center, rgba(255,255,255,0.9) 0%, transparent 70%); }
         .ball.removing { animation: popOut 0.3s ease-out forwards; }
+        .ball.hint { animation: hintPulse 0.6s ease-in-out infinite; box-shadow: 0 0 20px #FFD700, 0 0 40px #FFD700; z-index: 1000 !important; }
         @keyframes hintPulse { 0%, 100% { box-shadow: 0 0 20px #FFD700; } 50% { box-shadow: 0 0 40px #FFD700, 0 0 60px #FFD700; } }
         @keyframes fadeIn { from { opacity: 0; transform: translateX(-50%) translateY(-10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
@@ -82,7 +83,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v2.8.7</div>
+        <div id="versionDisplay">v2.8.8</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
