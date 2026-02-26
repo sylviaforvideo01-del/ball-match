@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ball Match 3D v2.7.1</title>
+    <title>Ball Match 3D v2.7.2</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
         body { font-family: 'Microsoft YaHei', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; overflow: hidden; touch-action: none; }
@@ -82,7 +82,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v2.7.1</div>
+        <div id="versionDisplay">v2.7.2</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -188,8 +188,8 @@
                 { name: 'green', bg: 'radial-gradient(circle at 30% 30%, #00aa00, #006600)', emoji: '' },
                 { name: 'purple', bg: 'radial-gradient(circle at 30% 30%, #aa44ff, #6600cc)', emoji: '' },
                 { name: 'white', bg: 'radial-gradient(circle at 30% 30%, #f8f8f8, #d0d0d0)', emoji: '' },
-                { name: 'cyan', bg: 'radial-gradient(circle at 30% 30%, #00ffff, #00aaaa)', emoji: '' },
-                { name: 'pink', bg: 'radial-gradient(circle at 30% 30%, #ff88dd, #cc3399)', emoji: '' },
+                { name: 'cyan', bg: 'radial-gradient(circle at 30% 30%, #00ffff, #00aaaa)', emoji: '💎' },
+                { name: 'pink', bg: 'radial-gradient(circle at 30% 30%, #ff88dd, #cc3399)', emoji: '💗' },
                 { name: 'brown', bg: 'radial-gradient(circle at 30% 30%, #8b4513, #5c2e0c)', emoji: '' }
             ],
             levels: [
@@ -331,7 +331,7 @@
                             ball.dataset.layer = layer;
                             ball.dataset.row = row;
                             ball.dataset.col = col;
-                            ball.textContent = '';
+                            ball.textContent = ballData[ballIndex].emoji;
                             ball.addEventListener('click', (e) => this.onBallClick(e, ball));
                             board.appendChild(ball); this.balls.push(ball); ballIndex++;
                         }
@@ -528,7 +528,7 @@
                 const clickableBalls = this.balls.filter(b => !b.classList.contains('blocked') && !this.slots.includes(b));
                 const colors = clickableBalls.map(b => b.dataset.color);
                 for (let i = colors.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [colors[i], colors[j]] = [colors[j], colors[i]]; }
-                clickableBalls.forEach((ball, index) => { const colorData = CONFIG.colors.find(c => c.name === colors[index]); ball.dataset.color = colors[index]; ball.style.background = colorData.bg; ball.textContent = ''; });
+                clickableBalls.forEach((ball, index) => { const colorData = CONFIG.colors.find(c => c.name === colors[index]); ball.dataset.color = colors[index]; ball.style.background = colorData.bg; ball.textContent = colorData.emoji; });
             }
             undo() {
                 if (this.history.length === 0) return;
