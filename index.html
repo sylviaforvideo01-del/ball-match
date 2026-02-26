@@ -83,7 +83,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-                                                           <div id="versionDisplay">v2.9.17</div>
+                                                              <div id="versionDisplay">v2.9.18</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -242,16 +242,26 @@
                 const maxOffset = 0.5; // 最大偏移0.5个球大小
                 
                 if (window.innerWidth < 600) { // 移动端判断
-                    // 计算球大小，考虑列数和偏移
-                    // 奇数层向右偏移 layerOffset * 0.5
-                    // 总宽度 = 列数 * 球大小 + 最大偏移
-                    const maxColOffsetRatio = 0.35 * 0.5; // 相对于球大小的偏移比例
-                    const totalSpan = levelConfig.cols + maxColOffsetRatio;
+                    // 计算球大小，同时考虑列数、行数和层偏移
+                    // 确保棋盘在宽度和高度上都适合屏幕
+                    const maxColOffsetRatio = 0.35 * 0.5; // 相对于球大小的列偏移比例
+                    const maxRowOffsetRatio = 0.35 * 0.5; // 相对于球大小的行偏移比例
+                    
+                    // 计算基于宽度的球大小
+                    const widthSpan = levelConfig.cols + maxColOffsetRatio;
                     const availableWidth = window.innerWidth * 0.92;
-                    this.ballSize = Math.floor(availableWidth / totalSpan);
-                    this.ballSize = Math.max(this.ballSize, 32); // 最小32px
-                    this.ballSize = Math.min(this.ballSize, 50); // 最大50px
-                    this.ballGap = 3;
+                    const sizeByWidth = Math.floor(availableWidth / widthSpan);
+                    
+                    // 计算基于高度的球大小（考虑工具栏和槽位区域）
+                    const gameAreaHeight = window.innerHeight * 0.65; // 游戏区域大约占屏幕65%
+                    const heightSpan = levelConfig.rows + maxRowOffsetRatio;
+                    const sizeByHeight = Math.floor(gameAreaHeight / heightSpan);
+                    
+                    // 取较小值确保棋盘能完整显示
+                    this.ballSize = Math.min(sizeByWidth, sizeByHeight);
+                    this.ballSize = Math.max(this.ballSize, 28); // 最小28px
+                    this.ballSize = Math.min(this.ballSize, 45); // 最大45px
+                    this.ballGap = 2;
                 } else {
                     const sizeByWidth = Math.floor(gameArea.clientWidth * 0.95 / (levelConfig.cols + levelConfig.layers * 0.15));
                     const sizeByHeight = Math.floor(gameArea.clientHeight * 0.9 / (levelConfig.rows + levelConfig.layers * 0.15));
@@ -303,10 +313,11 @@
                 const boardWidth = config.cols * ballTotalSize + maxColOffset;
                 const boardHeight = config.rows * ballTotalSize + maxColOffset;
                 
-                // 居中计算 - 对于高层数关卡，往上和往左偏移
-                const isHighLevel = config.layers >= 8;
-                const offsetX = isHighLevel ? 2 : Math.max(5, (gameArea.clientWidth - boardWidth) / 2);
-                const offsetY = isHighLevel ? 10 : Math.max(5, (gameArea.clientHeight - boardHeight) / 2);
+                // 移动端使用更小的边距，确保棋盘不溢出
+                const isMobile = window.innerWidth < 600;
+                const minMargin = isMobile ? 2 : 5;
+                const offsetX = Math.max(minMargin, (gameArea.clientWidth - boardWidth) / 2);
+                const offsetY = Math.max(minMargin, (gameArea.clientHeight - boardHeight) / 2);
                 
                 // 按层、行、列重新创建球
                 let slotIndex = 0;
@@ -430,10 +441,11 @@
                 const boardWidth = config.cols * ballTotalSize + maxColOffset;
                 const boardHeight = config.rows * ballTotalSize + maxColOffset;
                 
-                // 对于高层数关卡，往上和往左偏移
-                const isHighLevel = config.layers >= 8;
-                const offsetX = isHighLevel ? 2 : Math.max(10, (gameArea.clientWidth - boardWidth) / 2);
-                const offsetY = isHighLevel ? 10 : Math.max(10, (gameArea.clientHeight - boardHeight) / 2);
+                // 移动端使用更小的边距，确保棋盘不溢出
+                const isMobile = window.innerWidth < 600;
+                const minMargin = isMobile ? 2 : 10;
+                const offsetX = Math.max(minMargin, (gameArea.clientWidth - boardWidth) / 2);
+                const offsetY = Math.max(minMargin, (gameArea.clientHeight - boardHeight) / 2);
                 let ballIndex = 0;
                 for (let layer = 0; layer < config.layers; layer++) {
                     for (let row = 0; row < config.rows; row++) {
