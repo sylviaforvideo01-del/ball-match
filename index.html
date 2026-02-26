@@ -83,7 +83,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-                 <div id="versionDisplay">v2.9.3</div>
+                    <div id="versionDisplay">v2.9.4</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -239,14 +239,15 @@
                 const maxOffset = 0.5; // 最大偏移0.5个球大小
                 
                 if (window.innerWidth < 600) { // 移动端判断
-                    // 使用实际关卡配置计算
-                    // 总宽度 = (列数-1) + 最大偏移
-                    const totalSpan = (levelConfig.cols - 1) + maxOffset;
-                    const availableWidth = window.innerWidth * 0.92;
+                    // 计算球大小，考虑列数和偏移
+                    // 奇数层向右偏移 layerOffset * 0.5
+                    const maxColOffset = 0.35 * 0.5; // 相对于球大小的偏移比例
+                    const totalSpan = (levelConfig.cols - 1) + maxColOffset + 0.5; // +0.5 确保右边距
+                    const availableWidth = window.innerWidth * 0.95;
                     this.ballSize = Math.floor(availableWidth / totalSpan);
-                    this.ballSize = Math.max(this.ballSize, 32); // 最小32px
-                    this.ballSize = Math.min(this.ballSize, 50); // 最大50px
-                    this.ballGap = 3;
+                    this.ballSize = Math.max(this.ballSize, 30); // 最小30px
+                    this.ballSize = Math.min(this.ballSize, 48); // 最大48px
+                    this.ballGap = 2;
                 } else {
                     const sizeByWidth = Math.floor(gameArea.clientWidth * 0.95 / (levelConfig.cols + levelConfig.layers * 0.15));
                     const sizeByHeight = Math.floor(gameArea.clientHeight * 0.9 / (levelConfig.rows + levelConfig.layers * 0.15));
