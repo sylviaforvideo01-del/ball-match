@@ -98,7 +98,7 @@
 
     <div id="gameContainer" style="display: none;">
         <button id="exitBtn">Exit</button>
-        <div id="versionDisplay">v3.0.8</div>
+        <div id="versionDisplay">v3.0.9</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -495,21 +495,23 @@
                     // 确保棋盘在宽度和高度上都适合屏幕
                     const maxColOffsetRatio = 0.35 * 0.5; // 相对于球大小的列偏移比例
                     const maxRowOffsetRatio = 0.35 * 0.5; // 相对于球大小的行偏移比例
-
+                    
                     // 计算基于宽度的球大小
                     const widthSpan = levelConfig.cols + maxColOffsetRatio;
                     const availableWidth = window.innerWidth * 0.92;
                     const sizeByWidth = Math.floor(availableWidth / widthSpan);
-
+                    
                     // 计算基于高度的球大小（使用实际游戏区域高度）
                     const gameAreaHeight = gameArea.clientHeight || window.innerHeight * 0.6;
                     const heightSpan = levelConfig.rows + maxRowOffsetRatio;
                     const sizeByHeight = Math.floor(gameAreaHeight / heightSpan);
-
+                    
                     // 取较小值确保棋盘能完整显示
                     this.ballSize = Math.min(sizeByWidth, sizeByHeight);
-                    this.ballSize = Math.max(this.ballSize, 24); // 最小24px
-                    this.ballSize = Math.min(this.ballSize, 42); // 最大42px
+                    // 确保最小值合理（对于大行数关卡）
+                    const minBallSize = Math.max(28, Math.floor(window.innerWidth / 10));
+                    this.ballSize = Math.max(this.ballSize, minBallSize);
+                    this.ballSize = Math.min(this.ballSize, 45); // 最大45px
                     this.ballGap = 2;
                 } else {
                     // 电脑版使用与移动端一致的计算逻辑
@@ -707,13 +709,13 @@
                 console.log('Total balls:', totalBalls, 'Usable balls:', usableBalls);
                 const colors = CONFIG.colors.slice(0, config.types);
                 console.log('Colors available:', colors.length, 'Types needed:', config.types);
-                
+
                 // 安全检查：确保有足够的颜色
                 if (colors.length === 0) {
                     console.error('No colors available');
                     return;
                 }
-                
+
                 // 安全检查：确保 types 不超过颜色数组长度
                 if (config.types > CONFIG.colors.length) {
                     console.error('Not enough colors for types:', config.types, 'Available:', CONFIG.colors.length);
@@ -1244,7 +1246,11 @@
                 this.isProcessing = false;
 
                 document.getElementById('winModal').classList.remove('show');
-                CrazySDK.levelComplete(this.level);
+
+                // 清理旧球，避免 handleResize 重新生成旧棋盘
+                this.balls = [];
+                this.slots = [];
+                document.getElementById('board').innerHTML = '';
 
                 // 直接进入下一关，不显示广告
                 this.level++;
