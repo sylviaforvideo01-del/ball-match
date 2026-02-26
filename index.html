@@ -83,7 +83,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-                                                                    <div id="versionDisplay">v2.9.23</div>
+                                                                    <div id="versionDisplay">v2.9.24</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -1005,6 +1005,8 @@
                         adError: (error) => { console.log('Ad error:', error); if (callback) callback(); }
                     });
                 } else if (callback) {
+                    // 如果没有 CrazyGames SDK，直接执行回调
+                    console.log('CrazyGames SDK not available, skipping ad');
                     callback();
                 }
             }
