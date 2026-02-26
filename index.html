@@ -98,7 +98,7 @@
 
     <div id="gameContainer" style="display: none;">
         <button id="exitBtn">Exit</button>
-        <div id="versionDisplay">v3.0.3</div>
+        <div id="versionDisplay">v3.0.4</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -411,13 +411,17 @@
                 `;
                 document.body.appendChild(modal);
 
-                modal.querySelectorAll('.levelBtn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        this.level = parseInt(btn.dataset.level);
+                // 使用事件委托，确保按钮点击有效
+                const levelSelect = modal.querySelector('.levelSelect');
+                levelSelect.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('levelBtn')) {
+                        const level = parseInt(e.target.dataset.level);
+                        console.log('Admin selected level:', level);
+                        this.level = level;
                         modal.remove();
                         this.showUserInfo();
                         this.startGame();
-                    });
+                    }
                 });
 
                 document.getElementById('closeAdminBtn').addEventListener('click', () => {
