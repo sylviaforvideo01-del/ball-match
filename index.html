@@ -83,7 +83,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-                                               <div id="versionDisplay">v2.9.13</div>
+                                                  <div id="versionDisplay">v2.9.14</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -699,20 +699,20 @@
                         document.getElementById('winTitle').textContent = '🎉 All 15 Levels Cleared!';
                         document.getElementById('winText').textContent = `Final Score: ${this.score}`;
                         newNextBtn.textContent = 'Restart';
-                        newNextBtn.addEventListener('click', () => { 
+                        newNextBtn.onclick = () => { 
                             this.level = 1; 
                             this.score = 0; 
                             document.getElementById('winModal').classList.remove('show'); 
                             this.startLevel(); 
-                        });
+                        };
                     } else {
                         document.getElementById('winTitle').textContent = `Level ${this.level} Complete!`;
                         document.getElementById('winText').textContent = `Level: ${levelConfig.name} | Score: ${this.score}`;
                         newNextBtn.textContent = 'Next Level';
-                        newNextBtn.addEventListener('click', () => {
+                        newNextBtn.onclick = () => {
                             document.getElementById('winModal').classList.remove('show');
                             this.nextLevel();
-                        });
+                        };
                     }
                     document.getElementById('winModal').classList.add('show');
                 }
