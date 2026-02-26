@@ -220,7 +220,7 @@
                 for (let i = ballData.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [ballData[i], ballData[j]] = [ballData[j], ballData[i]]; }
                 const gameArea = document.getElementById('gameArea');
                 const ballTotalSize = this.ballSize + this.ballGap;
-                const layerOffset = this.ballSize * 0.12;
+                const layerOffset = this.ballSize * 0.35;
                 const boardWidth = config.cols * ballTotalSize + (config.layers - 1) * layerOffset;
                 const boardHeight = config.rows * ballTotalSize + (config.layers - 1) * layerOffset;
                 const offsetX = (gameArea.clientWidth - boardWidth) / 2;
@@ -258,10 +258,11 @@
                 });
             }
             isBallBlocked(ball) {
+                if (this.slots.includes(ball)) return false;
                 const layer = parseInt(ball.dataset.layer), row = parseInt(ball.dataset.row), col = parseInt(ball.dataset.col);
                 const maxLayers = CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)].layers;
                 for (let l = layer + 1; l < maxLayers; l++) {
-                    const covering = this.balls.filter(b => parseInt(b.dataset.layer) === l && !b.classList.contains('removing') && Math.abs(parseInt(b.dataset.row) - row) <= 1 && Math.abs(parseInt(b.dataset.col) - col) <= 1);
+                    const covering = this.balls.filter(b => parseInt(b.dataset.layer) === l && !b.classList.contains('removing') && !this.slots.includes(b) && Math.abs(parseInt(b.dataset.row) - row) <= 1 && Math.abs(parseInt(b.dataset.col) - col) <= 1);
                     if (covering.length > 0) return true;
                 }
                 return false;
