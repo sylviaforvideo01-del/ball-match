@@ -1,70 +1,56 @@
-# 球球消消乐 (Ball Match)
+# Ball Match 3D
 
-一个类似《羊了个羊》的网页版三消游戏，使用软软弹弹的彩色小球代替传统方块。
+A fun and addictive ball-matching puzzle game! Tap balls to match 3 of the same color. Clear all balls to win!
 
-## 游戏特点
+## 🎮 How to Play
 
-- 🎮 经典三消玩法，层层堆叠的球球
-- 🌈 8种不同颜色的软萌小球
-- ✨ 软弹的动画效果和粒子特效
-- 🛠️ 三种道具：打乱、撤销、提示
-- 📱 支持手机和电脑
-- 🎯 多关卡渐进难度
+1. **Tap** balls to move them to the slot
+2. **Match 3** balls of the same color to eliminate them
+3. **Don't fill up** the slot (max 7 balls)
+4. **Clear all** balls to complete the level
 
-## 如何游玩
+## ✨ Features
 
-1. 点击最上层的球球，将它们放入底部槽位
-2. 三个相同颜色的球球会自动消除
-3. 清空所有球球即可过关
-4. 槽位满了游戏结束
+- **15 Challenging Levels** - Increasing difficulty with more layers and colors
+- **3 Powerful Tools**:
+  - 🎲 **Shuffle** - Randomize ball positions
+  - ↩️ **Undo** - Reverse your last move
+  - ✨ **Hint** - Get helpful suggestions
+- **Combo System** - Chain matches for bonus points
+- **Beautiful 3D Visuals** - Layered balls with smooth animations
+- **Sound Effects** - Toggle game sounds on/off
 
-## CrazyGames 上传说明
+## 🎯 Difficulty Progression
 
-### 文件结构
-```
-ball-match-game/
-├── index.html      # 主游戏文件
-├── package.json    # 项目配置
-└── README.md       # 本文件
-```
+| Level | Grid | Layers | Colors |
+|:-----:|:----:|:------:|:------:|
+| 1-2 | 3×5 | 1-2 | 2-3 |
+| 3-4 | 3×5 | 2 | 4-5 |
+| 5-6 | 4×6 | 2-3 | 6-8 |
+| 7-9 | 5×6 | 4-6 | 9 |
+| 10-15 | 6×7 | 7-12 | 9 |
 
-### 上传步骤
+## 🚀 Play Now
 
-1. 访问 [CrazyGames 开发者后台](https://developer.crazygames.com/)
-2. 登录/注册开发者账号
-3. 点击 "Submit a game"
-4. 填写游戏信息：
-   - **Game Name**: 球球消消乐 / Ball Match
-   - **Category**: Puzzle / Match-3
-   - **Description**: A fun match-3 puzzle game with soft bouncy balls
-5. 上传文件：
-   - 将整个文件夹压缩为 ZIP
-   - 或只上传 `index.html`（单文件即可运行）
-6. 等待审核
+Open `index.html` in your browser to start playing!
 
-### 技术规格
+## 🛠️ Technologies
 
-- **类型**: HTML5 Canvas-less (纯 DOM)
-- **分辨率**: 响应式，自适应屏幕
-- **控制**: 鼠标点击 / 触摸
-- **CrazyGames SDK**: 已预留集成位置
+- HTML5
+- CSS3 (Animations & Gradients)
+- Vanilla JavaScript (ES6+)
+- Web Audio API
 
-## 本地运行
+## 📱 Compatibility
 
-```bash
-# 使用任意静态服务器
-npx serve .
+- ✅ Chrome / Edge / Firefox / Safari
+- ✅ Mobile browsers (iOS Safari, Chrome Mobile)
+- ✅ Responsive design for all screen sizes
 
-# 或使用 Python
-python -m http.server 8080
-```
+## 📝 License
 
-然后访问 `http://localhost:8080`
+This project is open source. Feel free to fork and modify!
 
-## 游戏截图
+---
 
-（建议添加游戏截图以提升审核通过率）
-
-## 许可证
-
-MIT
+**Enjoy the game! 🎉**
