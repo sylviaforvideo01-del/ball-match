@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ball Match 3D v2.7.3</title>
+    <title>Ball Match 3D v2.7.4</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
         body { font-family: 'Microsoft YaHei', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; overflow: hidden; touch-action: none; }
@@ -82,7 +82,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v2.7.3</div>
+        <div id="versionDisplay">v2.7.4</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -159,8 +159,8 @@
             playTool() { if (!this.clickEnabled || !this.audioContext) return; this.playTone(500, 0.08, 0.12, 'square', 0.2); setTimeout(() => this.playTone(700, 0.08, 0.12, 'square', 0.2), 60); }
             playCombo() { if (!this.cheerEnabled || !this.audioContext) return; this.playTone(880, 0.1, 0.15, 'sine', 0.25); }
             playTone(f, a, d, t, v) { 
-                if (!this.audioContext) return; 
-                // Ensure audio context is running on mobile
+                if (!this.audioContext) return;
+                // Mobile: try to resume if suspended
                 if (this.audioContext.state === 'suspended') {
                     this.audioContext.resume();
                 }
@@ -234,12 +234,9 @@
                 
                 // 根据屏幕宽度动态计算球的大小
                 if (window.innerWidth < 600) { // 移动端判断
-                    // 根据关卡调整球大小，避免后面关卡球太大放不下
-                    const maxCols = Math.max(...CONFIG.levels.map(l => l.cols));
-                    const maxLayers = Math.max(...CONFIG.levels.map(l => l.layers));
-                    const maxSize = Math.floor((window.innerWidth * 0.9) / (maxCols + maxLayers * 0.3));
-                    this.ballSize = Math.min(maxSize, Math.floor(window.innerWidth / 8));
-                    this.ballGap = 3;
+                    // 手机端使用更大的球
+                    this.ballSize = Math.floor(window.innerWidth / 6.5);
+                    this.ballGap = 4;
                 } else {
                     const sizeByWidth = Math.floor(gameArea.clientWidth * 0.95 / (levelConfig.cols + levelConfig.layers * 0.15));
                     const sizeByHeight = Math.floor(gameArea.clientHeight * 0.9 / (levelConfig.rows + levelConfig.layers * 0.15));
