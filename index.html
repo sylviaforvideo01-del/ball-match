@@ -18,7 +18,7 @@
         .ball::after { content: ''; position: absolute; bottom: 12%; right: 18%; width: 18%; height: 12%; background: radial-gradient(ellipse at center, rgba(255,255,255,0.6) 0%, transparent 70%); border-radius: 50%; }
         .ball.clickable { animation: float 2s ease-in-out infinite; }
         .ball.clickable:hover { transform: scale(1.08); filter: brightness(1.15); }
-        .ball.blocked { opacity: 0.75; filter: brightness(0.75) grayscale(0.3); cursor: not-allowed; }
+        .ball.blocked { opacity: 0.6; filter: brightness(0.85); cursor: not-allowed; }
         .ball.selected { animation: bounce 0.5s ease-in-out infinite; box-shadow: inset -3px -3px 8px rgba(255,255,255,0.95), inset 3px 3px 8px rgba(255,255,255,0.6), 0 0 25px rgba(255,255,255,0.7), 0 0 0 4px rgba(255,255,255,0.5); }
         .ball[data-color="white"] { box-shadow: inset -3px -3px 8px rgba(255,255,255,1), inset 3px 3px 8px rgba(200,200,200,0.8), inset 2px 2px 6px rgba(0,0,0,0.1), 0 6px 12px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.2); }
         .ball[data-color="white"]::before { background: radial-gradient(ellipse at center, rgba(255,255,255,1) 0%, rgba(255,255,255,0.8) 40%, transparent 70%); }
@@ -82,7 +82,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v2.8.2</div>
+        <div id="versionDisplay">v2.8.3</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -255,9 +255,10 @@
                 }
                 
                 document.querySelectorAll('.slot').forEach(slot => { slot.style.width = this.ballSize + 'px'; slot.style.height = this.ballSize + 'px'; });
-                // 只在游戏进行中且球已生成时重新渲染，避免关卡切换时重置
+                // 避免频繁重新渲染，只在必要时更新
                 if (this.balls.length > 0 && document.getElementById('gameContainer').style.display !== 'none' && !this.isProcessing) {
-                    this.regenerateBoardWithNewSize();
+                    // 使用 requestAnimationFrame 优化性能
+                    requestAnimationFrame(() => this.regenerateBoardWithNewSize());
                 }
             }
             regenerateBoardWithNewSize() {
@@ -445,12 +446,20 @@
             isBallBlocked(ball) {
                 if (this.slots.includes(ball)) return false;
                 const layer = parseInt(ball.dataset.layer), row = parseInt(ball.dataset.row), col = parseInt(ball.dataset.col);
-                const maxLayers = CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)].layers;
-                for (let l = layer + 1; l < maxLayers; l++) {
-                    const covering = this.balls.filter(b => parseInt(b.dataset.layer) === l && !b.classList.contains('removing') && !this.slots.includes(b) && Math.abs(parseInt(b.dataset.row) - row) <= 1 && Math.abs(parseInt(b.dataset.col) - col) <= 1);
-                    if (covering.length > 0) return true;
+                // 只检查紧邻的下一层（layer+1），而不是所有上层
+                // 这样玩家可以看到下一层的颜色，但看不到更深层
+                const nextLayer = layer + 1;
+                if (nextLayer >= CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)].layers) {
+                    return false; // 已经是顶层
                 }
-                return false;
+                const covering = this.balls.filter(b => 
+                    parseInt(b.dataset.layer) === nextLayer && 
+                    !b.classList.contains('removing') && 
+                    !this.slots.includes(b) && 
+                    Math.abs(parseInt(b.dataset.row) - row) <= 1 && 
+                    Math.abs(parseInt(b.dataset.col) - col) <= 1
+                );
+                return covering.length > 0;
             }
             onBallClick(e, ball) {
                 if (this.isProcessing || ball.classList.contains('blocked') || ball.classList.contains('removing') || this.slots.length >= CONFIG.slotCount) return;
