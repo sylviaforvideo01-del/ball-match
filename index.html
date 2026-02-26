@@ -83,7 +83,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-                                                                 <div id="versionDisplay">v2.9.19</div>
+                                                                    <div id="versionDisplay">v2.9.20</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -707,14 +707,11 @@
                     const newNextBtn = nextBtn.cloneNode(true);
                     nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
                     
-                    // 重新获取新按钮的引用
-                    const freshNextBtn = document.getElementById('nextBtn');
-                    
                     if (this.level >= CONFIG.levels.length) {
                         document.getElementById('winTitle').textContent = '🎉 All 15 Levels Cleared!';
                         document.getElementById('winText').textContent = `Final Score: ${this.score}`;
-                        freshNextBtn.textContent = 'Restart';
-                        freshNextBtn.onclick = () => { 
+                        newNextBtn.textContent = 'Restart';
+                        newNextBtn.onclick = () => { 
                             this.level = 1; 
                             this.score = 0; 
                             document.getElementById('winModal').classList.remove('show'); 
@@ -723,8 +720,8 @@
                     } else {
                         document.getElementById('winTitle').textContent = `Level ${this.level} Complete!`;
                         document.getElementById('winText').textContent = `Level: ${levelConfig.name} | Score: ${this.score}`;
-                        freshNextBtn.textContent = 'Next Level';
-                        freshNextBtn.onclick = () => {
+                        newNextBtn.textContent = 'Next Level';
+                        newNextBtn.onclick = () => {
                             console.log('Next Level button clicked');
                             document.getElementById('winModal').classList.remove('show');
                             this.nextLevel();
