@@ -95,7 +95,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-                                                                    <div id="versionDisplay">v3.0.0</div>
+                                                                    <div id="versionDisplay">v3.0.1</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -150,18 +150,18 @@
     </div>
     <script>
         class SoundManager {
-            constructor() { 
-                this.clickEnabled = true; 
-                this.cheerEnabled = true; 
-                this.audioContext = null; 
+            constructor() {
+                this.clickEnabled = true;
+                this.cheerEnabled = true;
+                this.audioContext = null;
                 this.initialized = false;
             }
-            init() { 
+            init() {
                 if (this.initialized) return;
-                try { 
-                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)(); 
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
                     this.initialized = true;
-                    
+
                     // Mobile: unlock audio on first user interaction
                     const unlockAudio = () => {
                         if (this.audioContext && this.audioContext.state === 'suspended') {
@@ -172,14 +172,14 @@
                         // 播放一个无声的音频来解锁
                         this.playSilentTone();
                     };
-                    
+
                     // 监听多种用户交互事件
                     document.addEventListener('touchstart', unlockAudio, { once: true });
                     document.addEventListener('click', unlockAudio, { once: true });
                     document.addEventListener('touchend', unlockAudio, { once: true });
                 } catch(e) {
                     console.error('Audio init failed:', e);
-                } 
+                }
             }
             playSilentTone() {
                 if (!this.audioContext) return;
@@ -208,23 +208,23 @@
             playLose() { this.ensureAudioContext(); if (!this.cheerEnabled || !this.audioContext) return; [400, 350, 300, 250].forEach((f, i) => setTimeout(() => this.playTone(f, 0.2, 0.25, 'sawtooth', 0.2), i * 100)); }
             playTool() { this.ensureAudioContext(); if (!this.clickEnabled || !this.audioContext) return; this.playTone(500, 0.08, 0.12, 'square', 0.2); setTimeout(() => this.playTone(700, 0.08, 0.12, 'square', 0.2), 60); }
             playCombo() { this.ensureAudioContext(); if (!this.cheerEnabled || !this.audioContext) return; this.playTone(880, 0.1, 0.15, 'sine', 0.25); }
-            playTone(f, a, d, t, v) { 
+            playTone(f, a, d, t, v) {
                 if (!this.audioContext) return;
                 // Mobile: try to resume if suspended
                 if (this.audioContext.state === 'suspended') {
                     this.audioContext.resume();
                 }
-                const o = this.audioContext.createOscillator(), g = this.audioContext.createGain(); 
-                o.connect(g); 
-                g.connect(this.audioContext.destination); 
-                o.frequency.value = f; 
-                o.type = t; 
-                const n = this.audioContext.currentTime; 
-                g.gain.setValueAtTime(0, n); 
-                g.gain.linearRampToValueAtTime(v, n + a); 
-                g.gain.exponentialRampToValueAtTime(0.01, n + a + d); 
-                o.start(n); 
-                o.stop(n + a + d + 0.05); 
+                const o = this.audioContext.createOscillator(), g = this.audioContext.createGain();
+                o.connect(g);
+                g.connect(this.audioContext.destination);
+                o.frequency.value = f;
+                o.type = t;
+                const n = this.audioContext.currentTime;
+                g.gain.setValueAtTime(0, n);
+                g.gain.linearRampToValueAtTime(v, n + a);
+                g.gain.exponentialRampToValueAtTime(0.01, n + a + d);
+                o.start(n);
+                o.stop(n + a + d + 0.05);
             }
             toggleClick() { return this.clickEnabled = !this.clickEnabled; }
             toggleCheer() { return this.cheerEnabled = !this.cheerEnabled; }
@@ -264,36 +264,36 @@
             ]
         };
         class Game {
-            constructor() { 
-                this.level = 1; 
-                this.score = 0; 
-                this.balls = []; 
-                this.slots = []; 
-                this.history = []; 
-                this.tools = { shuffle: 3, undo: 3, hint: 3 }; 
-                this.isProcessing = false; 
-                this.combo = 0; 
-                this.lastMatchTime = 0; 
-                this.ballSize = 50; 
-                this.ballGap = 6; 
-                this.soundManager = new SoundManager(); 
-                this.hasInteracted = false; 
-                this.tutorialElement = null; 
-                this.tutorialTimeout = null; 
+            constructor() {
+                this.level = 1;
+                this.score = 0;
+                this.balls = [];
+                this.slots = [];
+                this.history = [];
+                this.tools = { shuffle: 3, undo: 3, hint: 3 };
+                this.isProcessing = false;
+                this.combo = 0;
+                this.lastMatchTime = 0;
+                this.ballSize = 50;
+                this.ballGap = 6;
+                this.soundManager = new SoundManager();
+                this.hasInteracted = false;
+                this.tutorialElement = null;
+                this.tutorialTimeout = null;
                 this.resizeTimeout = null;
                 // 用户系统
                 this.username = null;
                 this.isAdmin = false;
                 this.userProgress = this.loadUserProgress();
-                this.init(); 
+                this.init();
             }
-            
+
             // 用户系统方法
             loadUserProgress() {
                 const saved = localStorage.getItem('ballMatchUsers');
                 return saved ? JSON.parse(saved) : {};
             }
-            
+
             saveUserProgress() {
                 if (this.username && !this.isAdmin) {
                     this.userProgress[this.username] = {
@@ -304,32 +304,32 @@
                     localStorage.setItem('ballMatchUsers', JSON.stringify(this.userProgress));
                 }
             }
-            
+
             showUsernameModal() {
                 const modal = document.createElement('div');
                 modal.id = 'usernameModal';
                 modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:5000;';
                 modal.innerHTML = `
                     <div style="background:linear-gradient(145deg,#667eea,#764ba2);padding:35px;border-radius:25px;text-align:center;color:white;max-width:340px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
-                        <h3 style="margin-bottom:15px;font-size:24px;text-shadow:2px 2px 4px rgba(0,0,0,0.3);">👤 输入用户名</h3>
-                        <p style="margin-bottom:20px;opacity:0.9;font-size:14px;">输入用户名以保存游戏进度<br>或点击"跳过"以游客身份游玩</p>
-                        <input type="text" id="usernameInput" placeholder="输入用户名" maxlength="20" autocomplete="off">
+                        <h3 style="margin-bottom:15px;font-size:24px;text-shadow:2px 2px 4px rgba(0,0,0,0.3);">👤 Enter Username</h3>
+                        <p style="margin-bottom:20px;opacity:0.9;font-size:14px;">Enter a username to save your progress<br>or click "Skip" to play as guest</p>
+                        <input type="text" id="usernameInput" placeholder="Enter username" maxlength="20" autocomplete="off">
                         <p id="usernameError" style="color:#ff6b6b;font-size:12px;margin:5px 0;min-height:18px;"></p>
                         <div style="display:flex;flex-direction:column;gap:10px;margin-top:15px;">
-                            <button id="confirmUsernameBtn" style="padding:12px 24px;border:none;border-radius:25px;background:linear-gradient(145deg,#00cc66,#009944);color:white;font-weight:bold;cursor:pointer;box-shadow:0 4px 15px rgba(0,200,100,0.4);font-size:16px;">✅ 确认</button>
-                            <button id="skipUsernameBtn" style="padding:10px 24px;border:none;border-radius:25px;background:rgba(255,255,255,0.2);color:white;cursor:pointer;font-size:14px;">⏭️ 跳过（不保存进度）</button>
+                            <button id="confirmUsernameBtn" style="padding:12px 24px;border:none;border-radius:25px;background:linear-gradient(145deg,#00cc66,#009944);color:white;font-weight:bold;cursor:pointer;box-shadow:0 4px 15px rgba(0,200,100,0.4);font-size:16px;">✅ Confirm</button>
+                            <button id="skipUsernameBtn" style="padding:10px 24px;border:none;border-radius:25px;background:rgba(255,255,255,0.2);color:white;cursor:pointer;font-size:14px;">⏭️ Skip (No progress saved)</button>
                         </div>
                     </div>
                 `;
                 document.body.appendChild(modal);
-                
+
                 const input = document.getElementById('usernameInput');
                 const error = document.getElementById('usernameError');
-                
+
                 document.getElementById('confirmUsernameBtn').addEventListener('click', () => {
                     const username = input.value.trim();
                     if (!username) {
-                        error.textContent = '请输入用户名';
+                        error.textContent = 'Please enter a username';
                         return;
                     }
                     if (username === 'sylviaguanlizhe') {
@@ -341,61 +341,73 @@
                         return;
                     }
                     // 检查用户名是否已存在
-                    if (this.userProgress[username] && !confirm('该用户名已存在，是否继续之前的进度？')) {
-                        error.textContent = '请使用其他用户名';
+                    if (this.userProgress[username]) {
+                        if (confirm('Welcome back! Continue from Level ' + this.userProgress[username].level + '?')) {
+                            this.username = username;
+                            this.isAdmin = false;
+                            this.level = this.userProgress[username].level || 1;
+                            this.score = this.userProgress[username].score || 0;
+                            modal.remove();
+                            this.showUserInfo();
+                            this.startGame();
+                        } else {
+                            // 选择否，进入第一关
+                            this.username = username;
+                            this.isAdmin = false;
+                            this.level = 1;
+                            this.score = 0;
+                            modal.remove();
+                            this.showUserInfo();
+                            this.startGame();
+                        }
                         return;
                     }
                     this.username = username;
                     this.isAdmin = false;
-                    // 加载用户进度
-                    if (this.userProgress[username]) {
-                        this.level = this.userProgress[username].level || 1;
-                        this.score = this.userProgress[username].score || 0;
-                    }
                     modal.remove();
                     this.showUserInfo();
                     this.startGame();
                 });
-                
+
                 document.getElementById('skipUsernameBtn').addEventListener('click', () => {
                     this.username = null;
                     this.isAdmin = false;
                     this.level = 1;
                     this.score = 0;
                     modal.remove();
-                    alert('⚠️ 游客模式：游戏进度将不会被保存');
+                    alert('⚠️ Guest Mode: Progress will not be saved');
                     this.startGame();
                 });
-                
+
                 input.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') {
                         document.getElementById('confirmUsernameBtn').click();
                     }
                 });
-                
+
                 input.focus();
             }
-            
+
             showAdminPanel() {
                 const modal = document.createElement('div');
                 modal.id = 'adminModal';
                 modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:5000;';
-                
+
                 let levelButtons = '';
                 for (let i = 1; i <= CONFIG.levels.length; i++) {
                     levelButtons += `<button class="levelBtn" data-level="${i}">${i}</button>`;
                 }
-                
+
                 modal.innerHTML = `
                     <div style="background:linear-gradient(145deg,#ff6b6b,#ee5a5a);padding:35px;border-radius:25px;text-align:center;color:white;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
-                        <h3 style="margin-bottom:15px;font-size:24px;text-shadow:2px 2px 4px rgba(0,0,0,0.3);">👑 管理者面板</h3>
-                        <p style="margin-bottom:20px;opacity:0.9;font-size:14px;">欢迎，sylviaguanlizhe<br>请选择要跳转的关卡</p>
+                        <h3 style="margin-bottom:15px;font-size:24px;text-shadow:2px 2px 4px rgba(0,0,0,0.3);">👑 Admin Panel</h3>
+                        <p style="margin-bottom:20px;opacity:0.9;font-size:14px;">Welcome, sylviaguanlizhe<br>Select a level to jump to</p>
                         <div class="levelSelect">${levelButtons}</div>
-                        <button id="closeAdminBtn" style="margin-top:20px;padding:10px 24px;border:none;border-radius:25px;background:rgba(255,255,255,0.2);color:white;cursor:pointer;font-size:14px;">关闭</button>
+                        <button id="closeAdminBtn" style="margin-top:20px;padding:10px 24px;border:none;border-radius:25px;background:rgba(255,255,255,0.2);color:white;cursor:pointer;font-size:14px;">Close</button>
                     </div>
                 `;
                 document.body.appendChild(modal);
-                
+
                 modal.querySelectorAll('.levelBtn').forEach(btn => {
                     btn.addEventListener('click', () => {
                         this.level = parseInt(btn.dataset.level);
@@ -404,29 +416,29 @@
                         this.startGame();
                     });
                 });
-                
+
                 document.getElementById('closeAdminBtn').addEventListener('click', () => {
                     modal.remove();
                     this.showUsernameModal();
                 });
             }
-            
+
             showUserInfo() {
                 // 移除已存在的用户信息
                 const existing = document.getElementById('userInfo');
                 if (existing) existing.remove();
-                
+
                 if (this.username) {
                     const userInfo = document.createElement('div');
                     userInfo.id = 'userInfo';
                     userInfo.className = 'userInfo';
-                    userInfo.innerHTML = this.isAdmin 
+                    userInfo.innerHTML = this.isAdmin
                         ? `👑 ${this.username} | 关卡 ${this.level}`
                         : `👤 ${this.username} | 关卡 ${this.level}`;
                     document.body.appendChild(userInfo);
                 }
             }
-            
+
             startGame() {
                 document.getElementById('startScreen').style.display = 'none';
                 document.getElementById('gameContainer').style.display = 'flex';
@@ -435,10 +447,10 @@
                 CrazySDK.gameStart();
                 this.startLevel();
             }
-            
+
             init() { this.bindEvents(); this.handleResize(); window.addEventListener('resize', () => this.handleResize()); }
             bindEvents() {
-                document.getElementById('startBtn').addEventListener('click', () => { 
+                document.getElementById('startBtn').addEventListener('click', () => {
                     this.showUsernameModal();
                 });
                 document.getElementById('shuffleBtn').addEventListener('click', () => { this.soundManager.playTool(); this.useTool('shuffle'); });
@@ -450,40 +462,52 @@
             handleResize() {
                 const gameArea = document.getElementById('gameArea');
                 const levelConfig = CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)];
-                
+
                 // 根据屏幕宽度动态计算球的大小
                 // 偏移规则：偶数层偏移0，奇数层偏移0.5
                 // 奇数层交替方向：第1层右+0.5，第3层左-0.5...
                 const maxOffset = 0.5; // 最大偏移0.5个球大小
-                
+
                 if (window.innerWidth < 600) { // 移动端判断
                     // 计算球大小，同时考虑列数、行数和层偏移
                     // 确保棋盘在宽度和高度上都适合屏幕
                     const maxColOffsetRatio = 0.35 * 0.5; // 相对于球大小的列偏移比例
                     const maxRowOffsetRatio = 0.35 * 0.5; // 相对于球大小的行偏移比例
-                    
+
                     // 计算基于宽度的球大小
                     const widthSpan = levelConfig.cols + maxColOffsetRatio;
                     const availableWidth = window.innerWidth * 0.92;
                     const sizeByWidth = Math.floor(availableWidth / widthSpan);
-                    
+
                     // 计算基于高度的球大小（使用实际游戏区域高度）
                     const gameAreaHeight = gameArea.clientHeight || window.innerHeight * 0.6;
                     const heightSpan = levelConfig.rows + maxRowOffsetRatio;
                     const sizeByHeight = Math.floor(gameAreaHeight / heightSpan);
-                    
+
                     // 取较小值确保棋盘能完整显示
                     this.ballSize = Math.min(sizeByWidth, sizeByHeight);
                     this.ballSize = Math.max(this.ballSize, 24); // 最小24px
                     this.ballSize = Math.min(this.ballSize, 42); // 最大42px
                     this.ballGap = 2;
                 } else {
-                    const sizeByWidth = Math.floor(gameArea.clientWidth * 0.95 / (levelConfig.cols + levelConfig.layers * 0.15));
-                    const sizeByHeight = Math.floor(gameArea.clientHeight * 0.9 / (levelConfig.rows + levelConfig.layers * 0.15));
-                    this.ballSize = Math.max(42, Math.min(65, Math.min(sizeByWidth, sizeByHeight)));
+                    // 电脑版使用与移动端一致的计算逻辑
+                    const maxColOffsetRatio = 0.35 * 0.5;
+                    const maxRowOffsetRatio = 0.35 * 0.5;
+
+                    const widthSpan = levelConfig.cols + maxColOffsetRatio;
+                    const availableWidth = gameArea.clientWidth * 0.95;
+                    const sizeByWidth = Math.floor(availableWidth / widthSpan);
+
+                    const gameAreaHeight = gameArea.clientHeight;
+                    const heightSpan = levelConfig.rows + maxRowOffsetRatio;
+                    const sizeByHeight = Math.floor(gameAreaHeight / heightSpan);
+
+                    this.ballSize = Math.min(sizeByWidth, sizeByHeight);
+                    this.ballSize = Math.max(this.ballSize, 42);
+                    this.ballSize = Math.min(this.ballSize, 65);
                     this.ballGap = Math.max(3, Math.floor(this.ballSize / 12));
                 }
-                
+
                 document.querySelectorAll('.slot').forEach(slot => { slot.style.width = this.ballSize + 'px'; slot.style.height = this.ballSize + 'px'; });
                 // 使用防抖避免频繁重新渲染
                 if (this.resizeTimeout) clearTimeout(this.resizeTimeout);
@@ -494,6 +518,10 @@
                 }
             }
             regenerateBoardWithNewSize() {
+                // 清理棋盘上的所有旧球
+                const board = document.getElementById('board');
+                board.innerHTML = '';
+                
                 // 保存当前棋盘状态（颜色、位置、槽位状态）
                 const boardState = this.balls.map(ball => ({
                     id: ball.dataset.id,
@@ -505,35 +533,53 @@
                 }));
                 const slotColors = this.slots.map(ball => ball.dataset.color);
                 
+                // 清空槽位
+                this.slots = [];
+                document.querySelectorAll('.slot').forEach(slot => {
+                    slot.innerHTML = '';
+                    slot.classList.remove('filled');
+                });
+                
                 // 重新生成棋盘（新尺寸）
                 const config = CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)];
                 this.generateBoardWithState(config, boardState, slotColors);
             }
             generateBoardWithState(config, boardState, slotColors) {
-                this.balls = []; 
-                const board = document.getElementById('board'); 
+                this.balls = [];
+                const board = document.getElementById('board');
+                // 清理棋盘上的旧球（保留槽位中的）
+                const slots = document.querySelectorAll('.slot');
+                const ballsInSlots = new Set();
+                slots.forEach(slot => {
+                    const ball = slot.querySelector('.ball');
+                    if (ball) ballsInSlots.add(ball);
+                });
+                // 移除不在槽位中的球
+                board.querySelectorAll('.ball').forEach(ball => {
+                    if (!ballsInSlots.has(ball)) ball.remove();
+                });
                 // 保留槽位中的球
                 this.slots = [];
-                
+
                 const gameArea = document.getElementById('gameArea');
                 const ballTotalSize = this.ballSize + this.ballGap;
                 const layerOffset = this.ballSize * 0.35;
-                
+
                 // 计算实际棋盘尺寸（考虑层偏移）
                 // 奇数层向右偏移，需要额外空间
                 const maxColOffset = layerOffset * 0.5; // 最大列偏移
-                
+
                 // 考虑左右偏移后的实际宽度
                 // 最左边的球在偶数层（偏移0），最右边的球在奇数层（向右偏移）
                 const boardWidth = config.cols * ballTotalSize + maxColOffset;
                 const boardHeight = config.rows * ballTotalSize + maxColOffset;
-                
+
                 // 移动端使用更小的边距，确保棋盘不溢出
                 const isMobile = window.innerWidth < 600;
                 const minMargin = isMobile ? 2 : 5;
                 const offsetX = Math.max(minMargin, (gameArea.clientWidth - boardWidth) / 2);
                 const offsetY = Math.max(minMargin, (gameArea.clientHeight - boardHeight) / 2);
-                
+
                 // 按层、行、列重新创建球
                 let slotIndex = 0;
                 for (let layer = 0; layer < config.layers; layer++) {
@@ -542,22 +588,22 @@
                             // 查找对应位置的球状态
                             const savedBall = boardState.find(b => b.layer === layer && b.row === row && b.col === col);
                             if (!savedBall) continue;
-                            
+
                             const ball = document.createElement('div');
                             ball.className = 'ball';
                             ball.style.width = this.ballSize + 'px';
                             ball.style.height = this.ballSize + 'px';
-                            
+
                             // 交替方向偏移
                             const offset = (layer % 2 === 1) ? layerOffset * 0.5 : 0;
                             const direction = (Math.floor(layer / 2) % 2 === 0) ? 1 : -1;
                             const finalOffset = offset * direction;
                             ball.style.left = (offsetX + col * ballTotalSize + finalOffset) + 'px';
                             ball.style.top = (offsetY + row * ballTotalSize + finalOffset) + 'px';
-                            
+
                             ball.dataset.originalLeft = ball.style.left;
                             ball.dataset.originalTop = ball.style.top;
-                            
+
                             // 恢复颜色
                             const colorData = CONFIG.colors.find(c => c.name === savedBall.color);
                             ball.style.background = colorData.bg;
@@ -568,9 +614,9 @@
                             ball.dataset.row = row;
                             ball.dataset.col = col;
                             ball.textContent = window.innerWidth < 600 ? (['cyan', 'pink', 'orange', 'gold'].includes(savedBall.color) ? colorData.emoji : '') : colorData.emoji;
-                            
+
                             ball.addEventListener('click', (e) => this.onBallClick(e, ball));
-                            
+
                             if (savedBall.inSlot && slotIndex < slotColors.length) {
                                 // 球在槽位中
                                 this.slots.push(ball);
@@ -582,7 +628,7 @@
                         }
                     }
                 }
-                
+
                 this.updateSlots();
                 this.updateClickable();
             }
@@ -601,7 +647,7 @@
                 tutorial.innerHTML = '💡 Tap balls of the same color to match 3.<br>Watch out - don\'t fill up the slot!<br><span style="font-size:12px;opacity:0.8;">(Tap anywhere to close)</span>';
                 document.body.appendChild(tutorial);
                 this.tutorialElement = tutorial;
-                
+
                 // Close on any click/tap
                 const closeTutorial = () => {
                     this.hideTutorial();
@@ -629,13 +675,13 @@
                 const totalBalls = config.rows * config.cols * config.layers;
                 const usableBalls = Math.floor(totalBalls / 3) * 3;
                 const colors = CONFIG.colors.slice(0, config.types);
-                
+
                 // 安全检查：确保有足够的颜色
                 if (colors.length === 0) {
                     console.error('No colors available');
                     return;
                 }
-                
+
                 const ballData = [];
                 const baseCount = Math.max(0, Math.floor(usableBalls / colors.length / 3) * 3);
                 let remaining = usableBalls;
@@ -650,12 +696,12 @@
                 const gameArea = document.getElementById('gameArea');
                 const ballTotalSize = this.ballSize + this.ballGap;
                 const layerOffset = this.ballSize * 0.35;
-                
+
                 // 计算居中偏移，考虑奇数层向右偏移
                 const maxColOffset = layerOffset * 0.5;
                 const boardWidth = config.cols * ballTotalSize + maxColOffset;
                 const boardHeight = config.rows * ballTotalSize + maxColOffset;
-                
+
                 // 移动端使用更小的边距，确保棋盘不溢出
                 const isMobile = window.innerWidth < 600;
                 const minMargin = isMobile ? 2 : 10;
@@ -702,11 +748,11 @@
                         topLayer = Math.max(topLayer, parseInt(ball.dataset.layer));
                     }
                 });
-                
+
                 this.balls.forEach(ball => {
                     const layer = parseInt(ball.dataset.layer);
                     const isBlocked = this.isBallBlocked(ball);
-                    
+
                     if (this.slots.includes(ball)) {
                         // 槽位中的球
                         ball.classList.remove('blocked');
@@ -742,18 +788,18 @@
                 const row = parseInt(ball.dataset.row);
                 const col = parseInt(ball.dataset.col);
                 const nextLayer = layer + 1;
-                
+
                 const maxLayers = CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)].layers;
                 if (nextLayer >= maxLayers) {
                     return false;
                 }
-                
+
                 // 使用 for 循环代替 filter 提高性能
                 for (const b of this.balls) {
-                    if (parseInt(b.dataset.layer) === nextLayer && 
-                        !b.classList.contains('removing') && 
-                        !this.slots.includes(b) && 
-                        Math.abs(parseInt(b.dataset.row) - row) <= 1 && 
+                    if (parseInt(b.dataset.layer) === nextLayer &&
+                        !b.classList.contains('removing') &&
+                        !this.slots.includes(b) &&
+                        Math.abs(parseInt(b.dataset.row) - row) <= 1 &&
                         Math.abs(parseInt(b.dataset.col) - col) <= 1) {
                         return true;
                     }
@@ -817,18 +863,18 @@
                 comboText.textContent = texts[Math.min(combo, texts.length - 1)];
                 comboText.classList.remove('comboShow'); void comboText.offsetWidth; comboText.classList.add('comboShow');
             }
-            checkGameState() { 
-                if (this.slots.length >= CONFIG.slotCount) { 
-                    this.soundManager.playLose(); 
+            checkGameState() {
+                if (this.slots.length >= CONFIG.slotCount) {
+                    this.soundManager.playLose();
                     CrazySDK.gameEnd();
                     this.showRevivePrompt();
-                } 
+                }
             }
             showRevivePrompt() {
                 // 移除已存在的弹窗，防止重复
                 const existingModal = document.getElementById('reviveModal');
                 if (existingModal) existingModal.remove();
-                
+
                 const modal = document.createElement('div');
                 modal.id = 'reviveModal';
                 modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:3000;';
@@ -843,11 +889,11 @@
                     </div>
                 `;
                 document.body.appendChild(modal);
-                
+
                 // 使用一次性事件监听器
                 const reviveBtn = modal.querySelector('#reviveBtn');
                 const giveUpBtn = modal.querySelector('#giveUpBtn');
-                
+
                 reviveBtn.addEventListener('click', function onRevive() {
                     modal.remove();
                     CrazySDK.requestAd(() => {
@@ -858,12 +904,12 @@
                             const color = ball.dataset.color;
                             colorCount[color] = (colorCount[color] || 0) + 1;
                         });
-                        
+
                         // 计算需要从槽位移除多少球，使得每种颜色总数是3的倍数
                         // 优先移除那些数量不是3的倍数的颜色
                         const slotBallsToRemove = [];
                         const slotColors = [...this.slots];
-                        
+
                         for (const ball of slotColors) {
                             const color = ball.dataset.color;
                             // 如果移除这个球后，该颜色总数仍是3的倍数或更接近3的倍数
@@ -876,7 +922,7 @@
                                 colorCount[color]--;
                             }
                         }
-                        
+
                         // 如果还没有移除够一半，继续移除
                         let safetyCounter = 0;
                         while (slotBallsToRemove.length < Math.floor(this.slots.length / 2) && this.slots.length > 0 && safetyCounter < 20) {
@@ -886,7 +932,7 @@
                             }
                             safetyCounter++;
                         }
-                        
+
                         // 执行移除
                         for (const ball of slotBallsToRemove) {
                             const idx = this.slots.indexOf(ball);
@@ -899,14 +945,14 @@
                                 document.getElementById('board').appendChild(ball);
                             }
                         }
-                        
+
                         this.updateSlots();
                         this.updateClickable();
                         CrazySDK.gameStart();
                         this.showComboText('Revived!', '#00cc66');
                     });
                 }.bind(this), { once: true });
-                
+
                 giveUpBtn.addEventListener('click', function onGiveUp() {
                     modal.remove();
                     document.getElementById('gameOverModal').classList.add('show');
@@ -917,19 +963,19 @@
                     this.soundManager.playWin();
                     const levelConfig = CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)];
                     const nextBtn = document.getElementById('nextBtn');
-                    
+
                     // 保存进度
                     this.saveUserProgress();
-                    
+
                     if (this.level >= CONFIG.levels.length) {
                         document.getElementById('winTitle').textContent = '🎉 All 15 Levels Cleared!';
                         document.getElementById('winText').textContent = `Final Score: ${this.score}`;
                         nextBtn.textContent = 'Restart';
-                        nextBtn.onclick = () => { 
-                            this.level = 1; 
-                            this.score = 0; 
-                            document.getElementById('winModal').classList.remove('show'); 
-                            this.startLevel(); 
+                        nextBtn.onclick = () => {
+                            this.level = 1;
+                            this.score = 0;
+                            document.getElementById('winModal').classList.remove('show');
+                            this.startLevel();
                         };
                     } else {
                         document.getElementById('winTitle').textContent = `Level ${this.level} Complete!`;
@@ -944,23 +990,23 @@
                     document.getElementById('winModal').classList.add('show');
                 }
             }
-            useTool(type) { 
+            useTool(type) {
                 if (this.tools[type] <= 0) {
                     this.showToolAdPrompt(type);
                     return;
                 }
-                switch(type) { 
-                    case 'shuffle': this.shuffleBalls(); break; 
-                    case 'undo': this.undo(); break; 
-                    case 'hint': this.showHint(); break; 
-                } 
-                this.tools[type]--; 
-                this.updateUI(); 
+                switch(type) {
+                    case 'shuffle': this.shuffleBalls(); break;
+                    case 'undo': this.undo(); break;
+                    case 'hint': this.showHint(); break;
+                }
+                this.tools[type]--;
+                this.updateUI();
             }
             showToolAdPrompt(toolType) {
                 const toolNames = { shuffle: 'Shuffle', undo: 'Undo', hint: 'Hint' };
                 const toolName = toolNames[toolType];
-                
+
                 // Create prompt modal
                 const modal = document.createElement('div');
                 modal.id = 'adPromptModal';
@@ -976,7 +1022,7 @@
                     </div>
                 `;
                 document.body.appendChild(modal);
-                
+
                 document.getElementById('watchAdBtn').addEventListener('click', () => {
                     modal.remove();
                     CrazySDK.requestAd(() => {
@@ -985,7 +1031,7 @@
                         this.showComboText(`+1 ${toolName}!`, '#FFD700');
                     });
                 });
-                
+
                 document.getElementById('cancelAdBtn').addEventListener('click', () => {
                     modal.remove();
                 });
@@ -996,16 +1042,16 @@
                 // 收集所有颜色
                 const colors = boardBalls.map(b => b.dataset.color);
                 // 打乱颜色数组
-                for (let i = colors.length - 1; i > 0; i--) { 
-                    const j = Math.floor(Math.random() * (i + 1)); 
-                    [colors[i], colors[j]] = [colors[j], colors[i]]; 
+                for (let i = colors.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [colors[i], colors[j]] = [colors[j], colors[i]];
                 }
                 // 重新分配颜色，保持数量不变
-                boardBalls.forEach((ball, index) => { 
-                    const colorData = CONFIG.colors.find(c => c.name === colors[index]); 
-                    ball.dataset.color = colors[index]; 
-                    ball.style.background = colorData.bg; 
-                    ball.textContent = window.innerWidth < 600 ? (['cyan', 'pink', 'orange', 'gold'].includes(colorData.name) ? colorData.emoji : '') : colorData.emoji; 
+                boardBalls.forEach((ball, index) => {
+                    const colorData = CONFIG.colors.find(c => c.name === colors[index]);
+                    ball.dataset.color = colors[index];
+                    ball.style.background = colorData.bg;
+                    ball.textContent = window.innerWidth < 600 ? (['cyan', 'pink', 'orange', 'gold'].includes(colorData.name) ? colorData.emoji : '') : colorData.emoji;
                 });
             }
             undo() {
@@ -1044,80 +1090,80 @@
             }
             showHint() {
                 // 只获取实际可见的可点击球（没有被深层完全隐藏的）
-                const clickableBalls = this.balls.filter(b => 
-                    !b.classList.contains('blocked') && 
-                    !this.slots.includes(b) && 
+                const clickableBalls = this.balls.filter(b =>
+                    !b.classList.contains('blocked') &&
+                    !this.slots.includes(b) &&
                     !b.classList.contains('removing') &&
                     b.style.visibility !== 'hidden'  // 只提示实际可见的球
                 );
-                
+
                 // 如果没有可见的可点击球，直接打乱
                 if (clickableBalls.length === 0) {
                     this.shuffleBalls();
                     this.showComboText('Auto Shuffle!', '#FFD700');
                     return;
                 }
-                
+
                 // 统计槽位中各颜色数量
                 const slotColorCount = {};
-                this.slots.forEach(ball => { 
-                    const color = ball.dataset.color; 
-                    slotColorCount[color] = (slotColorCount[color] || 0) + 1; 
+                this.slots.forEach(ball => {
+                    const color = ball.dataset.color;
+                    slotColorCount[color] = (slotColorCount[color] || 0) + 1;
                 });
-                
+
                 // 1. 优先：槽位有2个同色，找第3个可见的可点击球
                 for (const color in slotColorCount) {
                     if (slotColorCount[color] >= 2) {
                         const matchingBalls = clickableBalls.filter(b => b.dataset.color === color);
-                        if (matchingBalls.length > 0) { 
-                            matchingBalls[0].classList.add('hint'); 
-                            setTimeout(() => matchingBalls[0].classList.remove('hint'), 2000); 
-                            return; 
+                        if (matchingBalls.length > 0) {
+                            matchingBalls[0].classList.add('hint');
+                            setTimeout(() => matchingBalls[0].classList.remove('hint'), 2000);
+                            return;
                         }
                     }
                 }
-                
+
                 // 2. 其次：槽位有1个，找另外2个可见的同色球
                 for (const color in slotColorCount) {
                     if (slotColorCount[color] === 1) {
                         const matchingBalls = clickableBalls.filter(b => b.dataset.color === color);
-                        if (matchingBalls.length >= 2) { 
-                            matchingBalls.slice(0, 2).forEach(ball => { 
-                                ball.classList.add('hint'); 
+                        if (matchingBalls.length >= 2) {
+                            matchingBalls.slice(0, 2).forEach(ball => {
+                                ball.classList.add('hint');
                             });
                             setTimeout(() => {
-                                matchingBalls.slice(0, 2).forEach(ball => ball.classList.remove('hint')); 
-                            }, 2000); 
-                            return; 
+                                matchingBalls.slice(0, 2).forEach(ball => ball.classList.remove('hint'));
+                            }, 2000);
+                            return;
                         }
                     }
                 }
-                
+
                 // 3. 最后：找可见的3个同色球
                 const clickableColorCount = {};
-                clickableBalls.forEach(ball => { 
-                    const color = ball.dataset.color; 
-                    clickableColorCount[color] = (clickableColorCount[color] || 0) + 1; 
+                clickableBalls.forEach(ball => {
+                    const color = ball.dataset.color;
+                    clickableColorCount[color] = (clickableColorCount[color] || 0) + 1;
                 });
-                
+
                 for (const color in clickableColorCount) {
                     if (clickableColorCount[color] >= 3) {
                         const matchingBalls = clickableBalls.filter(b => b.dataset.color === color);
-                        matchingBalls.slice(0, 3).forEach(ball => { 
-                            ball.classList.add('hint'); 
+                        matchingBalls.slice(0, 3).forEach(ball => {
+                            ball.classList.add('hint');
                         });
                         setTimeout(() => {
-                            matchingBalls.slice(0, 3).forEach(ball => ball.classList.remove('hint')); 
-                        }, 2000); 
+                            matchingBalls.slice(0, 3).forEach(ball => ball.classList.remove('hint'));
+                        }, 2000);
                         return;
                     }
                 }
-                
+
                 // 4. 没有可见的可消除组合，自动打乱
                 this.shuffleBalls();
                 this.showComboText('Auto Shuffle!', '#FFD700');
             }
-            
+
             showComboText(text, color) {
                 const comboText = document.getElementById('comboText');
                 comboText.textContent = text;
@@ -1136,32 +1182,32 @@
                 document.getElementById('undoBtn').disabled = this.tools.undo <= 0;
                 document.getElementById('hintBtn').disabled = this.tools.hint <= 0;
             }
-            restart() { 
-                document.getElementById('gameOverModal').classList.remove('show'); 
-                this.tools = { shuffle: 3, undo: 3, hint: 3 }; 
-                this.score = 0; 
-                this.combo = 0; 
-                this.hasInteracted = false; 
-                this.hideTutorial(); 
+            restart() {
+                document.getElementById('gameOverModal').classList.remove('show');
+                this.tools = { shuffle: 3, undo: 3, hint: 3 };
+                this.score = 0;
+                this.combo = 0;
+                this.hasInteracted = false;
+                this.hideTutorial();
                 CrazySDK.gameStart();
-                this.startLevel(); 
+                this.startLevel();
             }
-            nextLevel() { 
+            nextLevel() {
                 console.log('nextLevel called, current level:', this.level);
                 // 强制重置 isProcessing，防止卡死
                 this.isProcessing = false;
-                
-                document.getElementById('winModal').classList.remove('show'); 
+
+                document.getElementById('winModal').classList.remove('show');
                 CrazySDK.levelComplete(this.level);
                 // Show ad between levels (every 3 levels)
                 if (this.level % 3 === 0) {
                     console.log('Showing ad for level', this.level);
                     CrazySDK.requestAd(() => {
-                        this.level++; 
+                        this.level++;
                         console.log('Ad finished, starting level', this.level);
-                        this.tools = { shuffle: 3, undo: 3, hint: 3 }; 
-                        this.combo = 0; 
-                        this.hasInteracted = false; 
+                        this.tools = { shuffle: 3, undo: 3, hint: 3 };
+                        this.combo = 0;
+                        this.hasInteracted = false;
                         this.hideTutorial();
                         // 更新用户信息显示
                         this.showUserInfo();
@@ -1172,11 +1218,11 @@
                         }, 100);
                     });
                 } else {
-                    this.level++; 
+                    this.level++;
                     console.log('Starting level', this.level);
-                    this.tools = { shuffle: 3, undo: 3, hint: 3 }; 
-                    this.combo = 0; 
-                    this.hasInteracted = false; 
+                    this.tools = { shuffle: 3, undo: 3, hint: 3 };
+                    this.combo = 0;
+                    this.hasInteracted = false;
                     this.hideTutorial();
                     // 更新用户信息显示
                     this.showUserInfo();
@@ -1196,28 +1242,28 @@
                     console.log('CrazyGames SDK initialized');
                 }
             },
-            
+
             // Call when game starts
             gameStart: function() {
                 if (typeof window.CrazyGames !== 'undefined') {
                     window.CrazyGames.SDK.game.gameplayStart();
                 }
             },
-            
+
             // Call when game ends
             gameEnd: function() {
                 if (typeof window.CrazyGames !== 'undefined') {
                     window.CrazyGames.SDK.game.gameplayStop();
                 }
             },
-            
+
             // Call when level completes
             levelComplete: function(level) {
                 if (typeof window.CrazyGames !== 'undefined') {
                     window.CrazyGames.SDK.game.happyTime();
                 }
             },
-            
+
             // Request ad (call between levels)
             requestAd: function(callback) {
                 if (typeof window.CrazyGames !== 'undefined') {
@@ -1233,7 +1279,7 @@
                 }
             }
         };
-        
+
         CrazySDK.init();
         const game = new Game();
     </script>
