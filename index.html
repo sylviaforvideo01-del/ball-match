@@ -83,7 +83,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-                             <div id="versionDisplay">v2.9.7</div>
+                                <div id="versionDisplay">v2.9.8</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -899,9 +899,8 @@
                 this.startLevel(); 
             }
             nextLevel() { 
-                // 防止重复点击
-                if (this.isProcessing) return;
-                this.isProcessing = true;
+                // 强制重置 isProcessing，防止卡死
+                this.isProcessing = false;
                 
                 document.getElementById('winModal').classList.remove('show'); 
                 CrazySDK.levelComplete(this.level);
@@ -914,7 +913,6 @@
                         this.hasInteracted = false; 
                         this.hideTutorial(); 
                         this.startLevel();
-                        this.isProcessing = false;
                     });
                 } else {
                     this.level++; 
@@ -923,8 +921,6 @@
                     this.hasInteracted = false; 
                     this.hideTutorial(); 
                     this.startLevel();
-                    // 延迟重置 isProcessing
-                    setTimeout(() => { this.isProcessing = false; }, 500);
                 }
             }
         }
