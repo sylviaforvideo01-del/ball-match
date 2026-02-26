@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ball Match 3D v2.6.2</title>
+    <title>Ball Match 3D v2.6.3</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
         body { font-family: 'Microsoft YaHei', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; overflow: hidden; touch-action: none; }
@@ -82,7 +82,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v2.6.2</div>
+        <div id="versionDisplay">v2.6.3</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -155,7 +155,24 @@
             playLose() { if (!this.cheerEnabled || !this.audioContext) return; [400, 350, 300, 250].forEach((f, i) => setTimeout(() => this.playTone(f, 0.2, 0.25, 'sawtooth', 0.2), i * 100)); }
             playTool() { if (!this.clickEnabled || !this.audioContext) return; this.playTone(500, 0.08, 0.12, 'square', 0.2); setTimeout(() => this.playTone(700, 0.08, 0.12, 'square', 0.2), 60); }
             playCombo() { if (!this.cheerEnabled || !this.audioContext) return; this.playTone(880, 0.1, 0.15, 'sine', 0.25); }
-            playTone(f, a, d, t, v) { if (!this.audioContext) return; const o = this.audioContext.createOscillator(), g = this.audioContext.createGain(); o.connect(g); g.connect(this.audioContext.destination); o.frequency.value = f; o.type = t; const n = this.audioContext.currentTime; g.gain.setValueAtTime(0, n); g.gain.linearRampToValueAtTime(v, n + a); g.gain.exponentialRampToValueAtTime(0.01, n + a + d); o.start(n); o.stop(n + a + d + 0.05); }
+            playTone(f, a, d, t, v) { 
+                if (!this.audioContext) return; 
+                // Ensure audio context is running on mobile
+                if (this.audioContext.state === 'suspended') {
+                    this.audioContext.resume();
+                }
+                const o = this.audioContext.createOscillator(), g = this.audioContext.createGain(); 
+                o.connect(g); 
+                g.connect(this.audioContext.destination); 
+                o.frequency.value = f; 
+                o.type = t; 
+                const n = this.audioContext.currentTime; 
+                g.gain.setValueAtTime(0, n); 
+                g.gain.linearRampToValueAtTime(v, n + a); 
+                g.gain.exponentialRampToValueAtTime(0.01, n + a + d); 
+                o.start(n); 
+                o.stop(n + a + d + 0.05); 
+            }
             toggleClick() { return this.clickEnabled = !this.clickEnabled; }
             toggleCheer() { return this.cheerEnabled = !this.cheerEnabled; }
         }
@@ -198,8 +215,11 @@
                     document.getElementById('startScreen').style.display = 'none'; 
                     document.getElementById('gameContainer').style.display = 'flex'; 
                     this.soundManager.init(); 
-                    // Resume audio context immediately for mobile
-                    setTimeout(() => this.soundManager.resumeAudio(), 100);
+                    // Play a silent tone to unlock audio on mobile
+                    setTimeout(() => {
+                        this.soundManager.resumeAudio();
+                        this.soundManager.playClick();
+                    }, 100);
                     CrazySDK.gameStart();
                     this.startLevel(); 
                 });
