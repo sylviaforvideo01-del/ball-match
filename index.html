@@ -82,7 +82,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v2.8.1</div>
+        <div id="versionDisplay">v2.8.2</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -535,26 +535,53 @@
                 document.getElementById('reviveBtn').addEventListener('click', () => {
                     modal.remove();
                     CrazySDK.requestAd(() => {
-                        // Revive: 计算需要移除的球数，确保剩余球数是3的倍数
-                        const slotCount = this.slots.length;
-                        // 找到最大的移除数量，使得剩余数量是3的倍数
-                        let ballsToRemove = Math.floor(slotCount / 2);
-                        while ((slotCount - ballsToRemove) % 3 !== 0 && ballsToRemove > 0) {
-                            ballsToRemove--;
-                        }
-                        // 如果无法找到合适的数量，移除全部
-                        if (ballsToRemove === 0) {
-                            ballsToRemove = slotCount;
+                        // Revive: 计算所有球（棋盘+槽位）中每种颜色的数量
+                        const allBalls = [...this.balls, ...this.slots];
+                        const colorCount = {};
+                        allBalls.forEach(ball => {
+                            const color = ball.dataset.color;
+                            colorCount[color] = (colorCount[color] || 0) + 1;
+                        });
+                        
+                        // 计算需要从槽位移除多少球，使得每种颜色总数是3的倍数
+                        // 优先移除那些数量不是3的倍数的颜色
+                        const slotBallsToRemove = [];
+                        const slotColors = [...this.slots];
+                        
+                        for (const ball of slotColors) {
+                            const color = ball.dataset.color;
+                            // 如果移除这个球后，该颜色总数仍是3的倍数或更接近3的倍数
+                            if (colorCount[color] % 3 !== 0) {
+                                slotBallsToRemove.push(ball);
+                                colorCount[color]--;
+                            } else if (slotBallsToRemove.length < Math.floor(this.slots.length / 2)) {
+                                // 如果该颜色已经是3的倍数，但还需要移除更多球
+                                slotBallsToRemove.push(ball);
+                                colorCount[color]--;
+                            }
                         }
                         
-                        for (let i = 0; i < ballsToRemove; i++) {
-                            const ball = this.slots.pop();
-                            ball.classList.remove('selected');
-                            ball.style.position = 'absolute';
-                            ball.style.left = ball.dataset.originalLeft || '0px';
-                            ball.style.top = ball.dataset.originalTop || '0px';
-                            document.getElementById('board').appendChild(ball);
+                        // 如果还没有移除够一半，继续移除
+                        while (slotBallsToRemove.length < Math.floor(this.slots.length / 2) && this.slots.length > 0) {
+                            const ball = this.slots[this.slots.length - 1];
+                            if (!slotBallsToRemove.includes(ball)) {
+                                slotBallsToRemove.push(ball);
+                            }
                         }
+                        
+                        // 执行移除
+                        for (const ball of slotBallsToRemove) {
+                            const idx = this.slots.indexOf(ball);
+                            if (idx > -1) {
+                                this.slots.splice(idx, 1);
+                                ball.classList.remove('selected');
+                                ball.style.position = 'absolute';
+                                ball.style.left = ball.dataset.originalLeft || '0px';
+                                ball.style.top = ball.dataset.originalTop || '0px';
+                                document.getElementById('board').appendChild(ball);
+                            }
+                        }
+                        
                         this.updateSlots();
                         this.updateClickable();
                         CrazySDK.gameStart();
