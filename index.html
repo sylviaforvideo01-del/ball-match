@@ -83,7 +83,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-                                            <div id="versionDisplay">v2.9.12</div>
+                                               <div id="versionDisplay">v2.9.13</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -598,6 +598,10 @@
                 } 
             }
             showRevivePrompt() {
+                // 移除已存在的弹窗，防止重复
+                const existingModal = document.getElementById('reviveModal');
+                if (existingModal) existingModal.remove();
+                
                 const modal = document.createElement('div');
                 modal.id = 'reviveModal';
                 modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:3000;';
@@ -613,7 +617,11 @@
                 `;
                 document.body.appendChild(modal);
                 
-                document.getElementById('reviveBtn').addEventListener('click', () => {
+                // 使用一次性事件监听器
+                const reviveBtn = modal.querySelector('#reviveBtn');
+                const giveUpBtn = modal.querySelector('#giveUpBtn');
+                
+                reviveBtn.addEventListener('click', function onRevive() {
                     modal.remove();
                     CrazySDK.requestAd(() => {
                         // Revive: 计算所有球（棋盘+槽位）中每种颜色的数量
@@ -670,27 +678,41 @@
                         CrazySDK.gameStart();
                         this.showComboText('Revived!', '#00cc66');
                     });
-                });
+                }.bind(this), { once: true });
                 
-                document.getElementById('giveUpBtn').addEventListener('click', () => {
+                giveUpBtn.addEventListener('click', function onGiveUp() {
                     modal.remove();
                     document.getElementById('gameOverModal').classList.add('show');
-                });
+                }.bind(this), { once: true });
             }
             checkWin() {
                 if (this.balls.length === 0) {
                     this.soundManager.playWin();
                     const levelConfig = CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)];
+                    const nextBtn = document.getElementById('nextBtn');
+                    
+                    // 移除旧的事件监听器
+                    const newNextBtn = nextBtn.cloneNode(true);
+                    nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
+                    
                     if (this.level >= CONFIG.levels.length) {
                         document.getElementById('winTitle').textContent = '🎉 All 15 Levels Cleared!';
                         document.getElementById('winText').textContent = `Final Score: ${this.score}`;
-                        document.getElementById('nextBtn').textContent = 'Restart';
-                        document.getElementById('nextBtn').onclick = () => { this.level = 1; this.score = 0; document.getElementById('winModal').classList.remove('show'); this.startLevel(); };
+                        newNextBtn.textContent = 'Restart';
+                        newNextBtn.addEventListener('click', () => { 
+                            this.level = 1; 
+                            this.score = 0; 
+                            document.getElementById('winModal').classList.remove('show'); 
+                            this.startLevel(); 
+                        });
                     } else {
                         document.getElementById('winTitle').textContent = `Level ${this.level} Complete!`;
                         document.getElementById('winText').textContent = `Level: ${levelConfig.name} | Score: ${this.score}`;
-                        document.getElementById('nextBtn').textContent = 'Next Level';
-                        document.getElementById('nextBtn').onclick = () => this.nextLevel();
+                        newNextBtn.textContent = 'Next Level';
+                        newNextBtn.addEventListener('click', () => {
+                            document.getElementById('winModal').classList.remove('show');
+                            this.nextLevel();
+                        });
                     }
                     document.getElementById('winModal').classList.add('show');
                 }
