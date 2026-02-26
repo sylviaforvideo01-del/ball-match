@@ -83,7 +83,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-                                                                    <div id="versionDisplay">v2.9.24</div>
+                                                                    <div id="versionDisplay">v2.9.25</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -138,27 +138,64 @@
     </div>
     <script>
         class SoundManager {
-            constructor() { this.clickEnabled = true; this.cheerEnabled = true; this.audioContext = null; }
+            constructor() { 
+                this.clickEnabled = true; 
+                this.cheerEnabled = true; 
+                this.audioContext = null; 
+                this.initialized = false;
+            }
             init() { 
+                if (this.initialized) return;
                 try { 
                     this.audioContext = new (window.AudioContext || window.webkitAudioContext)(); 
-                    // Mobile: unlock audio on first touch anywhere
+                    this.initialized = true;
+                    
+                    // Mobile: unlock audio on first user interaction
                     const unlockAudio = () => {
                         if (this.audioContext && this.audioContext.state === 'suspended') {
-                            this.audioContext.resume();
+                            this.audioContext.resume().then(() => {
+                                console.log('Audio context resumed');
+                            });
                         }
+                        // 播放一个无声的音频来解锁
+                        this.playSilentTone();
                     };
+                    
+                    // 监听多种用户交互事件
                     document.addEventListener('touchstart', unlockAudio, { once: true });
                     document.addEventListener('click', unlockAudio, { once: true });
-                } catch(e) {} 
+                    document.addEventListener('touchend', unlockAudio, { once: true });
+                } catch(e) {
+                    console.error('Audio init failed:', e);
+                } 
             }
-            playClick() { if (!this.clickEnabled || !this.audioContext) return; this.playTone(800, 0.05, 0.1, 'sine', 0.2); }
-            playMatch() { if (!this.clickEnabled || !this.audioContext) return; this.playTone(600, 0.1, 0.15, 'sine', 0.2); setTimeout(() => this.playTone(800, 0.1, 0.15, 'sine', 0.2), 80); setTimeout(() => this.playTone(1000, 0.15, 0.2, 'sine', 0.2), 160); }
-            playCheer() { if (!this.cheerEnabled || !this.audioContext) return; [523, 659, 784, 1047, 1319].forEach((f, i) => setTimeout(() => this.playTone(f, 0.1, 0.3, 'triangle', 0.25), i * 100)); }
-            playWin() { if (!this.cheerEnabled || !this.audioContext) return; [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => this.playTone(f, 0.15, 0.2, 'triangle', 0.3), i * 120)); }
-            playLose() { if (!this.cheerEnabled || !this.audioContext) return; [400, 350, 300, 250].forEach((f, i) => setTimeout(() => this.playTone(f, 0.2, 0.25, 'sawtooth', 0.2), i * 100)); }
-            playTool() { if (!this.clickEnabled || !this.audioContext) return; this.playTone(500, 0.08, 0.12, 'square', 0.2); setTimeout(() => this.playTone(700, 0.08, 0.12, 'square', 0.2), 60); }
-            playCombo() { if (!this.cheerEnabled || !this.audioContext) return; this.playTone(880, 0.1, 0.15, 'sine', 0.25); }
+            playSilentTone() {
+                if (!this.audioContext) return;
+                try {
+                    const oscillator = this.audioContext.createOscillator();
+                    const gainNode = this.audioContext.createGain();
+                    oscillator.connect(gainNode);
+                    gainNode.connect(this.audioContext.destination);
+                    gainNode.gain.value = 0.001; // 几乎无声
+                    oscillator.start();
+                    oscillator.stop(this.audioContext.currentTime + 0.01);
+                } catch(e) {}
+            }
+            ensureAudioContext() {
+                if (!this.audioContext) {
+                    this.init();
+                }
+                if (this.audioContext && this.audioContext.state === 'suspended') {
+                    this.audioContext.resume();
+                }
+            }
+            playClick() { this.ensureAudioContext(); if (!this.clickEnabled || !this.audioContext) return; this.playTone(800, 0.05, 0.1, 'sine', 0.2); }
+            playMatch() { this.ensureAudioContext(); if (!this.clickEnabled || !this.audioContext) return; this.playTone(600, 0.1, 0.15, 'sine', 0.2); setTimeout(() => this.playTone(800, 0.1, 0.15, 'sine', 0.2), 80); setTimeout(() => this.playTone(1000, 0.15, 0.2, 'sine', 0.2), 160); }
+            playCheer() { this.ensureAudioContext(); if (!this.cheerEnabled || !this.audioContext) return; [523, 659, 784, 1047, 1319].forEach((f, i) => setTimeout(() => this.playTone(f, 0.1, 0.3, 'triangle', 0.25), i * 100)); }
+            playWin() { this.ensureAudioContext(); if (!this.cheerEnabled || !this.audioContext) return; [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => this.playTone(f, 0.15, 0.2, 'triangle', 0.3), i * 120)); }
+            playLose() { this.ensureAudioContext(); if (!this.cheerEnabled || !this.audioContext) return; [400, 350, 300, 250].forEach((f, i) => setTimeout(() => this.playTone(f, 0.2, 0.25, 'sawtooth', 0.2), i * 100)); }
+            playTool() { this.ensureAudioContext(); if (!this.clickEnabled || !this.audioContext) return; this.playTone(500, 0.08, 0.12, 'square', 0.2); setTimeout(() => this.playTone(700, 0.08, 0.12, 'square', 0.2), 60); }
+            playCombo() { this.ensureAudioContext(); if (!this.cheerEnabled || !this.audioContext) return; this.playTone(880, 0.1, 0.15, 'sine', 0.25); }
             playTone(f, a, d, t, v) { 
                 if (!this.audioContext) return;
                 // Mobile: try to resume if suspended
@@ -221,6 +258,7 @@
                 document.getElementById('startBtn').addEventListener('click', () => { 
                     document.getElementById('startScreen').style.display = 'none'; 
                     document.getElementById('gameContainer').style.display = 'flex'; 
+                    // 初始化音频并播放点击音效
                     this.soundManager.init(); 
                     this.soundManager.playClick();
                     CrazySDK.gameStart();
