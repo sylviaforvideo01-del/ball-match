@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>球球消消乐 - Ball Match v1.5</title>
+    <title>球球消消乐 - Ball Match v1.6</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
         body { font-family: 'Microsoft YaHei', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; overflow: hidden; touch-action: none; }
         #gameContainer { width: 100%; height: 100vh; display: flex; flex-direction: column; position: relative; }
-        #topBar { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); flex-shrink: 0; }
-        #levelInfo { color: white; font-size: clamp(14px, 4vw, 18px); font-weight: bold; }
-        #scoreInfo { color: #FFD700; font-size: clamp(12px, 3.5vw, 16px); }
+        #topBar { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1)); backdrop-filter: blur(10px); flex-shrink: 0; border-radius: 0 0 20px 20px; margin: 0 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        #levelInfo { color: white; font-size: clamp(16px, 4.5vw, 22px); font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); background: linear-gradient(135deg, #FFD700, #FFA500); padding: 6px 16px; border-radius: 20px; box-shadow: 0 3px 10px rgba(255,165,0,0.4); }
+        #scoreInfo { color: white; font-size: clamp(14px, 4vw, 18px); font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); background: linear-gradient(135deg, #00cc66, #009944); padding: 6px 16px; border-radius: 20px; box-shadow: 0 3px 10px rgba(0,200,100,0.4); }
         #gameArea { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         #board { position: relative; width: 100%; height: 100%; }
         .ball { position: absolute; border-radius: 50%; cursor: pointer; transition: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55); display: flex; align-items: center; justify-content: center; font-size: clamp(14px, 3.5vw, 20px); box-shadow: inset -3px -3px 8px rgba(255,255,255,0.9), inset 3px 3px 8px rgba(255,255,255,0.5), inset 2px 2px 6px rgba(0,0,0,0.15), 0 6px 12px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.3); }
@@ -18,8 +18,7 @@
         .ball::after { content: ''; position: absolute; bottom: 12%; right: 18%; width: 18%; height: 12%; background: radial-gradient(ellipse at center, rgba(255,255,255,0.6) 0%, transparent 70%); border-radius: 50%; }
         .ball.clickable { animation: float 2s ease-in-out infinite; }
         .ball.clickable:hover { transform: scale(1.08); filter: brightness(1.15); }
-        .ball.blocked { opacity: 0.85; filter: brightness(0.7); cursor: not-allowed; }
-        .ball.blocked::after { content: '🔒'; position: absolute; font-size: 12px; bottom: 5%; right: 5%; opacity: 0.7; }
+        .ball.blocked { opacity: 0.75; filter: brightness(0.75) grayscale(0.3); cursor: not-allowed; }
         .ball.selected { animation: bounce 0.5s ease-in-out infinite; box-shadow: inset -3px -3px 8px rgba(255,255,255,0.95), inset 3px 3px 8px rgba(255,255,255,0.6), 0 0 25px rgba(255,255,255,0.7), 0 0 0 4px rgba(255,255,255,0.5); }
         .ball.hint { animation: hintPulse 1s ease-in-out infinite; box-shadow: 0 0 20px #FFD700, 0 0 40px #FFD700; }
         .ball.removing { animation: popOut 0.3s ease-out forwards; }
@@ -31,13 +30,13 @@
         #slotLabel { position: absolute; left: 10px; color: rgba(255,255,255,0.7); font-size: clamp(9px, 2.5vw, 11px); }
         .slot { border-radius: 50%; background: rgba(255,255,255,0.1); border: 2px dashed rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
         .slot.filled { border: none; background: transparent; }
-        #toolsArea { position: absolute; bottom: clamp(75px, 13vh, 100px); left: 50%; transform: translateX(-50%); display: flex; gap: clamp(8px, 2.5vw, 16px); z-index: 100; background: rgba(0,0,0,0.2); padding: 8px 15px; border-radius: 50px; }
-        .toolWrapper { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .toolBtn { width: clamp(44px, 10vw, 56px); height: clamp(44px, 10vw, 56px); border-radius: 50%; border: none; background: linear-gradient(145deg, #FFD700, #FFA500); color: white; font-size: clamp(16px, 4vw, 22px); cursor: pointer; box-shadow: 0 4px 12px rgba(255, 165, 0, 0.4); transition: all 0.2s; display: flex; align-items: center; justify-content: center; position: relative; }
-        .toolBtn:hover { transform: scale(1.1); box-shadow: 0 6px 18px rgba(255, 165, 0, 0.6); }
-        .toolBtn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-        .toolCount { position: absolute; top: -4px; right: -4px; background: #ff4444; color: white; width: clamp(16px, 4vw, 22px); height: clamp(16px, 4vw, 22px); border-radius: 50%; font-size: clamp(9px, 2.5vw, 12px); display: flex; align-items: center; justify-content: center; font-weight: bold; }
-        .toolLabel { color: rgba(255,255,255,0.9); font-size: clamp(9px, 2.5vw, 11px); white-space: nowrap; }
+        #toolsArea { position: absolute; bottom: clamp(85px, 15vh, 110px); left: 50%; transform: translateX(-50%); display: flex; gap: clamp(12px, 3vw, 24px); z-index: 100; background: linear-gradient(145deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05)); padding: 12px 24px; border-radius: 60px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); backdrop-filter: blur(10px); }
+        .toolWrapper { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .toolBtn { width: clamp(56px, 12vw, 72px); height: clamp(56px, 12vw, 72px); border-radius: 50%; border: 3px solid rgba(255,255,255,0.3); background: linear-gradient(145deg, #667eea, #764ba2); color: white; font-size: clamp(22px, 5vw, 30px); cursor: pointer; box-shadow: 0 6px 20px rgba(102,126,234,0.5), inset 0 2px 4px rgba(255,255,255,0.3); transition: all 0.2s; display: flex; align-items: center; justify-content: center; position: relative; }
+        .toolBtn:hover { transform: scale(1.15) translateY(-3px); box-shadow: 0 10px 30px rgba(102,126,234,0.7), inset 0 2px 4px rgba(255,255,255,0.4); }
+        .toolBtn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+        .toolCount { position: absolute; top: -6px; right: -6px; background: linear-gradient(145deg, #ff4757, #ff3838); color: white; width: clamp(22px, 5vw, 28px); height: clamp(22px, 5vw, 28px); border-radius: 50%; font-size: clamp(11px, 3vw, 14px); display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 0 3px 8px rgba(255,71,87,0.5); border: 2px solid white; }
+        .toolLabel { color: white; font-size: clamp(11px, 3vw, 13px); font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); background: rgba(0,0,0,0.3); padding: 3px 10px; border-radius: 12px; }
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: all 0.3s; }
         .modal.show { opacity: 1; visibility: visible; }
         .modalContent { background: linear-gradient(145deg, #667eea, #764ba2); padding: clamp(20px, 6vw, 35px); border-radius: 20px; text-align: center; color: white; max-width: min(320px, 85vw); width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.5); transform: scale(0.8); transition: transform 0.3s; }
@@ -62,8 +61,9 @@
         @keyframes comboAnim { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; } 20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; } 80% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1) translateY(-40px); opacity: 0; } }
         #levelProgress { position: absolute; top: 45px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.8); font-size: clamp(11px, 3vw, 13px); background: rgba(0,0,0,0.2); padding: 4px 12px; border-radius: 15px; }
         #versionDisplay { position: fixed; bottom: 5px; right: 10px; color: rgba(255,255,255,0.4); font-size: 10px; z-index: 100; }
-        #soundControls { position: absolute; top: 10px; right: 10px; display: flex; gap: 8px; z-index: 100; }
-        .soundBtn { width: 36px; height: 36px; border-radius: 50%; border: none; background: rgba(255,255,255,0.2); color: white; font-size: 16px; cursor: pointer; }
+        #soundControls { position: fixed; top: 70px; right: 15px; display: flex; gap: 10px; z-index: 200; }
+        .soundBtn { width: 44px; height: 44px; border-radius: 50%; border: none; background: linear-gradient(145deg, #ff6b9d, #c44569); color: white; font-size: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(196,69,105,0.4); transition: all 0.2s; }
+        .soundBtn:hover { transform: scale(1.1); box-shadow: 0 6px 18px rgba(196,69,105,0.6); }
     </style>
 </head>
 <body>
@@ -79,10 +79,10 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v1.5</div>
+        <div id="versionDisplay">v1.6</div>
         <div id="soundControls">
-            <button class="soundBtn" id="clickSoundBtn" title="点击音效">🎵</button>
-            <button class="soundBtn" id="cheerSoundBtn" title="喝彩音效">🎉</button>
+            <button class="soundBtn" id="clickSoundBtn" title="点击音效">🔊</button>
+            <button class="soundBtn" id="cheerSoundBtn" title="喝彩音效">🎶</button>
         </div>
         <div id="topBar">
             <div id="levelInfo">第 1 关</div>
@@ -94,7 +94,7 @@
         </div>
         <div id="toolsArea">
             <div class="toolWrapper">
-                <button class="toolBtn" id="shuffleBtn">🔄<span class="toolCount" id="shuffleCount">3</span></button>
+                <button class="toolBtn" id="shuffleBtn">🎲<span class="toolCount" id="shuffleCount">3</span></button>
                 <span class="toolLabel">打乱</span>
             </div>
             <div class="toolWrapper">
@@ -102,7 +102,7 @@
                 <span class="toolLabel">撤销</span>
             </div>
             <div class="toolWrapper">
-                <button class="toolBtn" id="hintBtn">💡<span class="toolCount" id="hintCount">3</span></button>
+                <button class="toolBtn" id="hintBtn">✨<span class="toolCount" id="hintCount">3</span></button>
                 <span class="toolLabel">提示</span>
             </div>
         </div>
@@ -150,16 +150,16 @@
         const CONFIG = {
             slotCount: 7,
             colors: [
-                { name: 'red', bg: 'radial-gradient(circle at 30% 30%, #ff0000, #cc0000)', emoji: '🔴' },
-                { name: 'blue', bg: 'radial-gradient(circle at 30% 30%, #0066ff, #0044cc)', emoji: '🔵' },
-                { name: 'yellow', bg: 'radial-gradient(circle at 30% 30%, #ffcc00, #ff9900)', emoji: '🟡' },
-                { name: 'green', bg: 'radial-gradient(circle at 30% 30%, #00cc00, #009900)', emoji: '🟢' },
-                { name: 'purple', bg: 'radial-gradient(circle at 30% 30%, #9900ff, #6600cc)', emoji: '🟣' },
-                { name: 'orange', bg: 'radial-gradient(circle at 30% 30%, #ff6600, #cc4400)', emoji: '🟠' },
-                { name: 'cyan', bg: 'radial-gradient(circle at 30% 30%, #00cccc, #009999)', emoji: '💎' },
-                { name: 'pink', bg: 'radial-gradient(circle at 30% 30%, #ff66cc, #cc3399)', emoji: '💗' },
-                { name: 'lime', bg: 'radial-gradient(circle at 30% 30%, #99ff00, #66cc00)', emoji: '🍀' },
-                { name: 'brown', bg: 'radial-gradient(circle at 30% 30%, #cc6600, #994400)', emoji: '🟤' }
+                { name: 'red', bg: 'radial-gradient(circle at 30% 30%, #ff3333, #cc0000)', emoji: '🔴' },
+                { name: 'blue', bg: 'radial-gradient(circle at 30% 30%, #3388ff, #0044cc)', emoji: '🔵' },
+                { name: 'yellow', bg: 'radial-gradient(circle at 30% 30%, #ffdd33, #ff9900)', emoji: '🟡' },
+                { name: 'green', bg: 'radial-gradient(circle at 30% 30%, #33dd33, #009900)', emoji: '🟢' },
+                { name: 'purple', bg: 'radial-gradient(circle at 30% 30%, #aa44ff, #6600cc)', emoji: '🟣' },
+                { name: 'orange', bg: 'radial-gradient(circle at 30% 30%, #ffaa00, #cc6600)', emoji: '🟠' },
+                { name: 'cyan', bg: 'radial-gradient(circle at 30% 30%, #00dddd, #009999)', emoji: '💎' },
+                { name: 'pink', bg: 'radial-gradient(circle at 30% 30%, #ff88dd, #cc3399)', emoji: '💗' },
+                { name: 'lime', bg: 'radial-gradient(circle at 30% 30%, #aaff00, #66cc00)', emoji: '🍀' },
+                { name: 'brown', bg: 'radial-gradient(circle at 30% 30%, #aa6633, #663300)', emoji: '🟤' }
             ],
             levels: [
                 { rows: 3, cols: 5, layers: 1, types: 2, name: "初次体验" },
@@ -187,8 +187,8 @@
                 document.getElementById('shuffleBtn').addEventListener('click', () => { this.soundManager.playTool(); this.useTool('shuffle'); });
                 document.getElementById('undoBtn').addEventListener('click', () => { this.soundManager.playTool(); this.useTool('undo'); });
                 document.getElementById('hintBtn').addEventListener('click', () => { this.soundManager.playTool(); this.useTool('hint'); });
-                document.getElementById('clickSoundBtn').addEventListener('click', (e) => { const on = this.soundManager.toggleClick(); e.target.textContent = on ? '🎵' : '🔇'; e.target.style.opacity = on ? '1' : '0.5'; });
-                document.getElementById('cheerSoundBtn').addEventListener('click', (e) => { const on = this.soundManager.toggleCheer(); e.target.textContent = on ? '🎉' : '🔇'; e.target.style.opacity = on ? '1' : '0.5'; });
+                document.getElementById('clickSoundBtn').addEventListener('click', (e) => { const on = this.soundManager.toggleClick(); e.target.textContent = on ? '🔊' : '🔇'; e.target.style.opacity = on ? '1' : '0.5'; });
+                document.getElementById('cheerSoundBtn').addEventListener('click', (e) => { const on = this.soundManager.toggleCheer(); e.target.textContent = on ? '🎶' : '🔇'; e.target.style.opacity = on ? '1' : '0.5'; });
             }
             handleResize() {
                 const gameArea = document.getElementById('gameArea');
