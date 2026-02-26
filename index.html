@@ -255,19 +255,92 @@
                 }
                 
                 document.querySelectorAll('.slot').forEach(slot => { slot.style.width = this.ballSize + 'px'; slot.style.height = this.ballSize + 'px'; });
-                // 强制重新渲染当前关卡以应用新尺寸
-                if (this.balls.length > 0 && document.getElementById('gameContainer').style.display !== 'none') {
-                    // 保存当前状态
-                    const currentLevel = this.level;
-                    const currentScore = this.score;
-                    const currentTools = {...this.tools};
-                    // 重新生成棋盘
-                    this.startLevel();
-                    // 恢复状态
-                    this.score = currentScore;
-                    this.tools = currentTools;
-                    this.updateUI();
+                // 只在游戏进行中且球已生成时重新渲染，避免关卡切换时重置
+                if (this.balls.length > 0 && document.getElementById('gameContainer').style.display !== 'none' && !this.isProcessing) {
+                    this.regenerateBoardWithNewSize();
                 }
+            }
+            regenerateBoardWithNewSize() {
+                // 保存当前棋盘状态（颜色、位置、槽位状态）
+                const boardState = this.balls.map(ball => ({
+                    id: ball.dataset.id,
+                    color: ball.dataset.color,
+                    layer: parseInt(ball.dataset.layer),
+                    row: parseInt(ball.dataset.row),
+                    col: parseInt(ball.dataset.col),
+                    inSlot: this.slots.includes(ball)
+                }));
+                const slotColors = this.slots.map(ball => ball.dataset.color);
+                
+                // 重新生成棋盘（新尺寸）
+                const config = CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)];
+                this.generateBoardWithState(config, boardState, slotColors);
+            }
+            generateBoardWithState(config, boardState, slotColors) {
+                this.balls = []; 
+                const board = document.getElementById('board'); 
+                // 保留槽位中的球
+                this.slots = [];
+                
+                const gameArea = document.getElementById('gameArea');
+                const ballTotalSize = this.ballSize + this.ballGap;
+                const layerOffset = this.ballSize * 0.35;
+                const boardWidth = config.cols * ballTotalSize + (config.layers - 1) * layerOffset;
+                const boardHeight = config.rows * ballTotalSize + (config.layers - 1) * layerOffset;
+                const offsetX = (gameArea.clientWidth - boardWidth) / 2;
+                const offsetY = (gameArea.clientHeight - boardHeight) / 2;
+                
+                // 按层、行、列重新创建球
+                let slotIndex = 0;
+                for (let layer = 0; layer < config.layers; layer++) {
+                    for (let row = 0; row < config.rows; row++) {
+                        for (let col = 0; col < config.cols; col++) {
+                            // 查找对应位置的球状态
+                            const savedBall = boardState.find(b => b.layer === layer && b.row === row && b.col === col);
+                            if (!savedBall) continue;
+                            
+                            const ball = document.createElement('div');
+                            ball.className = 'ball';
+                            ball.style.width = this.ballSize + 'px';
+                            ball.style.height = this.ballSize + 'px';
+                            
+                            // 交替方向偏移
+                            const offset = (layer % 2 === 1) ? layerOffset * 0.5 : 0;
+                            const direction = (Math.floor(layer / 2) % 2 === 0) ? 1 : -1;
+                            const finalOffset = offset * direction;
+                            ball.style.left = (offsetX + col * ballTotalSize + finalOffset) + 'px';
+                            ball.style.top = (offsetY + row * ballTotalSize + finalOffset) + 'px';
+                            
+                            ball.dataset.originalLeft = ball.style.left;
+                            ball.dataset.originalTop = ball.style.top;
+                            
+                            // 恢复颜色
+                            const colorData = CONFIG.colors.find(c => c.name === savedBall.color);
+                            ball.style.background = colorData.bg;
+                            ball.style.zIndex = layer + 1;
+                            ball.dataset.color = savedBall.color;
+                            ball.dataset.id = savedBall.id;
+                            ball.dataset.layer = layer;
+                            ball.dataset.row = row;
+                            ball.dataset.col = col;
+                            ball.textContent = window.innerWidth < 600 ? (savedBall.color === 'cyan' || savedBall.color === 'pink' ? colorData.emoji : '') : colorData.emoji;
+                            
+                            ball.addEventListener('click', (e) => this.onBallClick(e, ball));
+                            
+                            if (savedBall.inSlot && slotIndex < slotColors.length) {
+                                // 球在槽位中
+                                this.slots.push(ball);
+                                slotIndex++;
+                            } else {
+                                board.appendChild(ball);
+                            }
+                            this.balls.push(ball);
+                        }
+                    }
+                }
+                
+                this.updateSlots();
+                this.updateClickable();
             }
             startLevel() { this.generateBoard(CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)]); this.updateUI(); this.showTutorialIfNeeded(); }
             showTutorialIfNeeded() {
@@ -549,10 +622,22 @@
                 });
             }
             shuffleBalls() {
-                const clickableBalls = this.balls.filter(b => !b.classList.contains('blocked') && !this.slots.includes(b));
-                const colors = clickableBalls.map(b => b.dataset.color);
-                for (let i = colors.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [colors[i], colors[j]] = [colors[j], colors[i]]; }
-                clickableBalls.forEach((ball, index) => { const colorData = CONFIG.colors.find(c => c.name === colors[index]); ball.dataset.color = colors[index]; ball.style.background = colorData.bg; ball.textContent = window.innerWidth < 600 ? (colorData.name === 'cyan' || colorData.name === 'pink' ? colorData.emoji : '') : colorData.emoji; });
+                // 获取所有在棋盘上的球（不包括槽位中的）
+                const boardBalls = this.balls.filter(b => !this.slots.includes(b));
+                // 收集所有颜色
+                const colors = boardBalls.map(b => b.dataset.color);
+                // 打乱颜色数组
+                for (let i = colors.length - 1; i > 0; i--) { 
+                    const j = Math.floor(Math.random() * (i + 1)); 
+                    [colors[i], colors[j]] = [colors[j], colors[i]]; 
+                }
+                // 重新分配颜色，保持数量不变
+                boardBalls.forEach((ball, index) => { 
+                    const colorData = CONFIG.colors.find(c => c.name === colors[index]); 
+                    ball.dataset.color = colors[index]; 
+                    ball.style.background = colorData.bg; 
+                    ball.textContent = window.innerWidth < 600 ? (colorData.name === 'cyan' || colorData.name === 'pink' ? colorData.emoji : '') : colorData.emoji; 
+                });
             }
             undo() {
                 if (this.history.length === 0) return;
