@@ -98,7 +98,7 @@
 
     <div id="gameContainer" style="display: none;">
         <button id="exitBtn">Exit</button>
-        <div id="versionDisplay">v3.0.6</div>
+        <div id="versionDisplay">v3.0.7</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -451,6 +451,11 @@
             init() { this.bindEvents(); this.handleResize(); window.addEventListener('resize', () => this.handleResize()); }
             bindEvents() {
                 document.getElementById('startBtn').addEventListener('click', () => {
+                    // 重置状态
+                    this.username = null;
+                    this.isAdmin = false;
+                    this.level = 1;
+                    this.score = 0;
                     this.showUsernameModal();
                 });
                 document.getElementById('exitBtn').addEventListener('click', () => {
@@ -463,9 +468,11 @@
                         this.slots = [];
                         this.history = [];
                         document.getElementById('board').innerHTML = '';
-                        // 移除用户信息
-                        const userInfo = document.getElementById('userInfo');
-                        if (userInfo) userInfo.remove();
+                        // 重置状态
+                        this.username = null;
+                        this.isAdmin = false;
+                        this.level = 1;
+                        this.score = 0;
                     }
                 });
                 document.getElementById('shuffleBtn').addEventListener('click', () => { this.soundManager.playTool(); this.useTool('shuffle'); });
@@ -977,11 +984,19 @@
                 if (this.balls.length === 0) {
                     this.soundManager.playWin();
                     const levelConfig = CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)];
-                    const nextBtn = document.getElementById('nextBtn');
-
+                    
                     // 保存进度
                     this.saveUserProgress();
-
+                    
+                    // 获取或创建新的 nextBtn
+                    const modalContent = document.querySelector('#winModal .modalContent');
+                    let nextBtn = document.getElementById('nextBtn');
+                    
+                    // 移除旧的按钮，创建新的以避免事件冲突
+                    const newBtn = nextBtn.cloneNode(true);
+                    nextBtn.parentNode.replaceChild(newBtn, nextBtn);
+                    nextBtn = newBtn;
+                    
                     if (this.level >= CONFIG.levels.length) {
                         document.getElementById('winTitle').textContent = '🎉 All 15 Levels Cleared!';
                         document.getElementById('winText').textContent = `Final Score: ${this.score}`;
@@ -997,7 +1012,7 @@
                         document.getElementById('winText').textContent = `Level: ${levelConfig.name} | Score: ${this.score}`;
                         nextBtn.textContent = 'Next Level';
                         nextBtn.onclick = () => {
-                            console.log('Next Level button clicked');
+                            console.log('Next Level button clicked, current level:', this.level);
                             document.getElementById('winModal').classList.remove('show');
                             this.nextLevel();
                         };
