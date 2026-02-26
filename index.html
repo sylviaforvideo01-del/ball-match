@@ -98,7 +98,7 @@
 
     <div id="gameContainer" style="display: none;">
         <button id="exitBtn">Exit</button>
-        <div id="versionDisplay">v3.0.7</div>
+        <div id="versionDisplay">v3.0.8</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -543,7 +543,7 @@
                 // 清理棋盘上的所有旧球
                 const board = document.getElementById('board');
                 board.innerHTML = '';
-                
+
                 // 保存当前棋盘状态（颜色、位置、槽位状态）
                 const boardState = this.balls.map(ball => ({
                     id: ball.dataset.id,
@@ -554,14 +554,14 @@
                     inSlot: this.slots.includes(ball)
                 }));
                 const slotColors = this.slots.map(ball => ball.dataset.color);
-                
+
                 // 清空槽位
                 this.slots = [];
                 document.querySelectorAll('.slot').forEach(slot => {
                     slot.innerHTML = '';
                     slot.classList.remove('filled');
                 });
-                
+
                 // 重新生成棋盘（新尺寸）
                 const config = CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)];
                 this.generateBoardWithState(config, boardState, slotColors);
@@ -654,7 +654,14 @@
                 this.updateSlots();
                 this.updateClickable();
             }
-            startLevel() { this.generateBoard(CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)]); this.updateUI(); this.showTutorialIfNeeded(); }
+            startLevel() {
+                console.log('startLevel called, level:', this.level);
+                const config = CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)];
+                console.log('Level config:', config);
+                this.generateBoard(config);
+                this.updateUI();
+                this.showTutorialIfNeeded();
+            }
             showTutorialIfNeeded() {
                 if (this.level === 1 && !this.hasInteracted) {
                     this.tutorialTimeout = setTimeout(() => {
@@ -692,15 +699,24 @@
                 }
             }
             generateBoard(config) {
+                console.log('generateBoard called with config:', config);
                 this.balls = []; this.slots = []; this.history = []; this.updateSlots();
                 const board = document.getElementById('board'); board.innerHTML = '';
                 const totalBalls = config.rows * config.cols * config.layers;
                 const usableBalls = Math.floor(totalBalls / 3) * 3;
+                console.log('Total balls:', totalBalls, 'Usable balls:', usableBalls);
                 const colors = CONFIG.colors.slice(0, config.types);
-
+                console.log('Colors available:', colors.length, 'Types needed:', config.types);
+                
                 // 安全检查：确保有足够的颜色
                 if (colors.length === 0) {
                     console.error('No colors available');
+                    return;
+                }
+                
+                // 安全检查：确保 types 不超过颜色数组长度
+                if (config.types > CONFIG.colors.length) {
+                    console.error('Not enough colors for types:', config.types, 'Available:', CONFIG.colors.length);
                     return;
                 }
 
@@ -984,19 +1000,19 @@
                 if (this.balls.length === 0) {
                     this.soundManager.playWin();
                     const levelConfig = CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)];
-                    
+
                     // 保存进度
                     this.saveUserProgress();
-                    
+
                     // 获取或创建新的 nextBtn
                     const modalContent = document.querySelector('#winModal .modalContent');
                     let nextBtn = document.getElementById('nextBtn');
-                    
+
                     // 移除旧的按钮，创建新的以避免事件冲突
                     const newBtn = nextBtn.cloneNode(true);
                     nextBtn.parentNode.replaceChild(newBtn, nextBtn);
                     nextBtn = newBtn;
-                    
+
                     if (this.level >= CONFIG.levels.length) {
                         document.getElementById('winTitle').textContent = '🎉 All 15 Levels Cleared!';
                         document.getElementById('winText').textContent = `Final Score: ${this.score}`;
