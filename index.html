@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ball Match 3D v2.7.7</title>
+    <title>Ball Match 3D v2.7.8</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
         body { font-family: 'Microsoft YaHei', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; overflow: hidden; touch-action: none; }
@@ -82,7 +82,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v2.7.7</div>
+        <div id="versionDisplay">v2.7.8</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -234,25 +234,25 @@
                 
                 // 根据屏幕宽度动态计算球的大小
                 // 最大关卡：6行×7列，12层，交替偏移
-                const maxRows = 6, maxCols = 7, maxLayers = 12;
-                const layerOffsetFactor = 0.35; // 层间偏移系数
+                const maxCols = 7, maxLayers = 12;
+                const layerOffsetFactor = 0.35; // 层间偏移系数（相对于球大小）
                 
                 if (window.innerWidth < 600) { // 移动端判断
-                    // 由于交替偏移（奇数层反向），最大总偏移约为 (层数-1) * 偏移系数
-                    // 第0层: 0, 第1层: -offset, 第2层: +2*offset, 第3层: -3*offset...
-                    // 最大正向偏移: 偶数层最大 = (11//2)*2 * offset = 10 * offset (第10层)
-                    // 最大负向偏移: 奇数层最大 = 11 * offset (第11层)
-                    const maxEvenLayer = Math.floor((maxLayers - 1) / 2) * 2; // 10
-                    const maxOddLayer = maxLayers - 1; // 11
-                    const maxPositiveOffset = maxEvenLayer * layerOffsetFactor; // 10 * 0.35 = 3.5
-                    const maxNegativeOffset = maxOddLayer * layerOffsetFactor; // 11 * 0.35 = 3.85
-                    // 总宽度需求 = 列数 + 最大正向偏移 + |最大负向偏移|
-                    const totalOffset = maxPositiveOffset + maxNegativeOffset; // ~7.35
-                    const availableWidth = window.innerWidth * 0.92;
-                    // 球大小 = 可用宽度 / (列数 + 总偏移)
-                    this.ballSize = Math.floor(availableWidth / (maxCols + totalOffset));
-                    this.ballSize = Math.max(this.ballSize, 30); // 最小30px
-                    this.ballSize = Math.min(this.ballSize, 42); // 最大42px
+                    // 交替偏移计算：
+                    // 第0层(偶): +0, 第1层(奇): -1×offset, 第2层(偶): +2×offset...
+                    // 12层(0-11)：偶数层最大偏移 = 第10层 = +10×offset
+                    //               奇数层最大偏移 = 第11层 = -11×offset
+                    // 对于第0列的球：最左位置 = -11×offset，最右位置 = +10×offset
+                    // 对于第6列的球：最左位置 = 6 - 11×offset，最右位置 = 6 + 10×offset
+                    // 总宽度 = (6 + 10×offset) - (-11×offset) = 6 + 21×offset
+                    const maxEvenOffset = 10 * layerOffsetFactor; // 3.5
+                    const maxOddOffset = 11 * layerOffsetFactor;  // 3.85
+                    const totalColsSpan = (maxCols - 1) + maxEvenOffset + maxOddOffset; // 6 + 3.5 + 3.85 = 13.35
+                    const availableWidth = window.innerWidth * 0.9;
+                    // 球大小 = 可用宽度 / 总跨度
+                    this.ballSize = Math.floor(availableWidth / totalColsSpan);
+                    this.ballSize = Math.max(this.ballSize, 28); // 最小28px
+                    this.ballSize = Math.min(this.ballSize, 38); // 最大38px
                     this.ballGap = 2;
                 } else {
                     const sizeByWidth = Math.floor(gameArea.clientWidth * 0.95 / (levelConfig.cols + levelConfig.layers * 0.15));
