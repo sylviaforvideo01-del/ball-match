@@ -83,7 +83,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-                    <div id="versionDisplay">v2.9.4</div>
+                       <div id="versionDisplay">v2.9.5</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -241,13 +241,14 @@
                 if (window.innerWidth < 600) { // 移动端判断
                     // 计算球大小，考虑列数和偏移
                     // 奇数层向右偏移 layerOffset * 0.5
-                    const maxColOffset = 0.35 * 0.5; // 相对于球大小的偏移比例
-                    const totalSpan = (levelConfig.cols - 1) + maxColOffset + 0.5; // +0.5 确保右边距
-                    const availableWidth = window.innerWidth * 0.95;
+                    // 总宽度 = 列数 * 球大小 + 最大偏移
+                    const maxColOffsetRatio = 0.35 * 0.5; // 相对于球大小的偏移比例
+                    const totalSpan = levelConfig.cols + maxColOffsetRatio;
+                    const availableWidth = window.innerWidth * 0.92;
                     this.ballSize = Math.floor(availableWidth / totalSpan);
-                    this.ballSize = Math.max(this.ballSize, 30); // 最小30px
-                    this.ballSize = Math.min(this.ballSize, 48); // 最大48px
-                    this.ballGap = 2;
+                    this.ballSize = Math.max(this.ballSize, 32); // 最小32px
+                    this.ballSize = Math.min(this.ballSize, 50); // 最大50px
+                    this.ballGap = 3;
                 } else {
                     const sizeByWidth = Math.floor(gameArea.clientWidth * 0.95 / (levelConfig.cols + levelConfig.layers * 0.15));
                     const sizeByHeight = Math.floor(gameArea.clientHeight * 0.9 / (levelConfig.rows + levelConfig.layers * 0.15));
@@ -292,20 +293,16 @@
                 
                 // 计算实际棋盘尺寸（考虑层偏移）
                 // 奇数层向右偏移，需要额外空间
-                const layerOffset = this.ballSize * 0.35;
                 const maxColOffset = layerOffset * 0.5; // 最大列偏移
                 
                 // 考虑左右偏移后的实际宽度
-                // 最左边的球可能在负偏移位置，最右边的球在正偏移位置
-                const minOffset = 0; // 偶数层偏移为0
-                const maxOffset = maxColOffset; // 奇数层向右偏移
+                // 最左边的球在偶数层（偏移0），最右边的球在奇数层（向右偏移）
+                const boardWidth = config.cols * ballTotalSize + maxColOffset;
+                const boardHeight = config.rows * ballTotalSize + maxColOffset;
                 
-                const boardWidth = config.cols * ballTotalSize + (maxOffset - minOffset);
-                const boardHeight = config.rows * ballTotalSize + (maxOffset - minOffset);
-                
-                // 居中计算，确保最左边的球不会超出左边界
-                const offsetX = Math.max(10, (gameArea.clientWidth - boardWidth) / 2 - minOffset);
-                const offsetY = Math.max(10, (gameArea.clientHeight - boardHeight) / 2);
+                // 居中计算
+                const offsetX = Math.max(5, (gameArea.clientWidth - boardWidth) / 2);
+                const offsetY = Math.max(5, (gameArea.clientHeight - boardHeight) / 2);
                 
                 // 按层、行、列重新创建球
                 let slotIndex = 0;
