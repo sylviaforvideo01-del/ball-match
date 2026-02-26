@@ -83,7 +83,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v2.9.0</div>
+           <div id="versionDisplay">v2.9.1</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -286,10 +286,17 @@
                 const gameArea = document.getElementById('gameArea');
                 const ballTotalSize = this.ballSize + this.ballGap;
                 const layerOffset = this.ballSize * 0.35;
-                const boardWidth = config.cols * ballTotalSize + (config.layers - 1) * layerOffset;
-                const boardHeight = config.rows * ballTotalSize + (config.layers - 1) * layerOffset;
-                const offsetX = (gameArea.clientWidth - boardWidth) / 2;
-                const offsetY = (gameArea.clientHeight - boardHeight) / 2;
+                
+                // 计算实际棋盘尺寸（考虑层偏移）
+                // 找出实际存在的最大层数
+                const maxLayer = Math.max(...boardState.map(b => b.layer), 0);
+                // 计算总宽度：列数 * 球大小 + 层偏移（奇数层有0.5偏移）
+                const maxColOffset = layerOffset * 0.5; // 最大列偏移
+                const boardWidth = config.cols * ballTotalSize + maxColOffset;
+                const boardHeight = config.rows * ballTotalSize + maxColOffset;
+                
+                const offsetX = Math.max(10, (gameArea.clientWidth - boardWidth) / 2);
+                const offsetY = Math.max(10, (gameArea.clientHeight - boardHeight) / 2);
                 
                 // 按层、行、列重新创建球
                 let slotIndex = 0;
@@ -627,11 +634,13 @@
                         }
                         
                         // 如果还没有移除够一半，继续移除
-                        while (slotBallsToRemove.length < Math.floor(this.slots.length / 2) && this.slots.length > 0) {
+                        let safetyCounter = 0;
+                        while (slotBallsToRemove.length < Math.floor(this.slots.length / 2) && this.slots.length > 0 && safetyCounter < 20) {
                             const ball = this.slots[this.slots.length - 1];
                             if (!slotBallsToRemove.includes(ball)) {
                                 slotBallsToRemove.push(ball);
                             }
+                            safetyCounter++;
                         }
                         
                         // 执行移除
