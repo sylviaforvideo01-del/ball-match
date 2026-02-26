@@ -80,7 +80,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v2.1</div>
+        <div id="versionDisplay">v2.2</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -192,7 +192,13 @@
             constructor() { this.level = 1; this.score = 0; this.balls = []; this.slots = []; this.history = []; this.tools = { shuffle: 3, undo: 3, hint: 3 }; this.isProcessing = false; this.combo = 0; this.lastMatchTime = 0; this.ballSize = 50; this.ballGap = 6; this.soundManager = new SoundManager(); this.hasInteracted = false; this.tutorialElement = null; this.tutorialTimeout = null; this.init(); }
             init() { this.bindEvents(); this.handleResize(); window.addEventListener('resize', () => this.handleResize()); }
             bindEvents() {
-                document.getElementById('startBtn').addEventListener('click', () => { document.getElementById('startScreen').style.display = 'none'; document.getElementById('gameContainer').style.display = 'flex'; this.soundManager.init(); this.startLevel(); });
+                document.getElementById('startBtn').addEventListener('click', () => { 
+                    document.getElementById('startScreen').style.display = 'none'; 
+                    document.getElementById('gameContainer').style.display = 'flex'; 
+                    this.soundManager.init(); 
+                    CrazySDK.gameStart();
+                    this.startLevel(); 
+                });
                 document.getElementById('shuffleBtn').addEventListener('click', () => { this.soundManager.playTool(); this.useTool('shuffle'); });
                 document.getElementById('undoBtn').addEventListener('click', () => { this.soundManager.playTool(); this.useTool('undo'); });
                 document.getElementById('hintBtn').addEventListener('click', () => { this.soundManager.playTool(); this.useTool('hint'); });
@@ -358,7 +364,13 @@
                 comboText.textContent = texts[Math.min(combo, texts.length - 1)];
                 comboText.classList.remove('comboShow'); void comboText.offsetWidth; comboText.classList.add('comboShow');
             }
-            checkGameState() { if (this.slots.length >= CONFIG.slotCount) { this.soundManager.playLose(); document.getElementById('gameOverModal').classList.add('show'); } }
+            checkGameState() { 
+                if (this.slots.length >= CONFIG.slotCount) { 
+                    this.soundManager.playLose(); 
+                    CrazySDK.gameEnd();
+                    document.getElementById('gameOverModal').classList.add('show'); 
+                } 
+            }
             checkWin() {
                 if (this.balls.length === 0) {
                     this.soundManager.playWin();
@@ -547,11 +559,86 @@
                 document.getElementById('undoBtn').disabled = this.tools.undo <= 0;
                 document.getElementById('hintBtn').disabled = this.tools.hint <= 0;
             }
-            restart() { document.getElementById('gameOverModal').classList.remove('show'); this.tools = { shuffle: 3, undo: 3, hint: 3 }; this.score = 0; this.combo = 0; this.hasInteracted = false; this.hideTutorial(); this.startLevel(); }
-            nextLevel() { document.getElementById('winModal').classList.remove('show'); this.level++; this.tools = { shuffle: 3, undo: 3, hint: 3 }; this.combo = 0; this.hasInteracted = false; this.hideTutorial(); this.startLevel(); }
+            restart() { 
+                document.getElementById('gameOverModal').classList.remove('show'); 
+                this.tools = { shuffle: 3, undo: 3, hint: 3 }; 
+                this.score = 0; 
+                this.combo = 0; 
+                this.hasInteracted = false; 
+                this.hideTutorial(); 
+                CrazySDK.gameStart();
+                this.startLevel(); 
+            }
+            nextLevel() { 
+                document.getElementById('winModal').classList.remove('show'); 
+                CrazySDK.levelComplete(this.level);
+                // Show ad between levels (every 3 levels)
+                if (this.level % 3 === 0) {
+                    CrazySDK.requestAd(() => {
+                        this.level++; 
+                        this.tools = { shuffle: 3, undo: 3, hint: 3 }; 
+                        this.combo = 0; 
+                        this.hasInteracted = false; 
+                        this.hideTutorial(); 
+                        this.startLevel();
+                    });
+                } else {
+                    this.level++; 
+                    this.tools = { shuffle: 3, undo: 3, hint: 3 }; 
+                    this.combo = 0; 
+                    this.hasInteracted = false; 
+                    this.hideTutorial(); 
+                    this.startLevel();
+                }
+            }
         }
         const game = new Game();
-        if (typeof window.CrazyGames !== 'undefined') window.CrazyGames.SDK.init();
+        
+        // CrazyGames SDK Integration
+        const CrazySDK = {
+            init: function() {
+                if (typeof window.CrazyGames !== 'undefined') {
+                    window.CrazyGames.SDK.init();
+                    console.log('CrazyGames SDK initialized');
+                }
+            },
+            
+            // Call when game starts
+            gameStart: function() {
+                if (typeof window.CrazyGames !== 'undefined') {
+                    window.CrazyGames.SDK.game.gameplayStart();
+                }
+            },
+            
+            // Call when game ends
+            gameEnd: function() {
+                if (typeof window.CrazyGames !== 'undefined') {
+                    window.CrazyGames.SDK.game.gameplayStop();
+                }
+            },
+            
+            // Call when level completes
+            levelComplete: function(level) {
+                if (typeof window.CrazyGames !== 'undefined') {
+                    window.CrazyGames.SDK.game.happyTime();
+                }
+            },
+            
+            // Request ad (call between levels)
+            requestAd: function(callback) {
+                if (typeof window.CrazyGames !== 'undefined') {
+                    window.CrazyGames.SDK.ad.requestAd('midgame', {
+                        adStarted: () => console.log('Ad started'),
+                        adFinished: () => { console.log('Ad finished'); if (callback) callback(); },
+                        adError: (error) => { console.log('Ad error:', error); if (callback) callback(); }
+                    });
+                } else if (callback) {
+                    callback();
+                }
+            }
+        };
+        
+        CrazySDK.init();
     </script>
 </body>
 </html>

@@ -19,6 +19,7 @@ A fun and addictive ball-matching puzzle game! Tap balls to match 3 of the same 
 - **Combo System** - Chain matches for bonus points
 - **Beautiful 3D Visuals** - Layered balls with smooth animations
 - **Sound Effects** - Toggle game sounds on/off
+- **Cross-Platform** - Play on desktop or mobile
 
 ## 🎯 Difficulty Progression
 
@@ -34,18 +35,38 @@ A fun and addictive ball-matching puzzle game! Tap balls to match 3 of the same 
 
 Open `index.html` in your browser to start playing!
 
+## 🎪 CrazyGames Integration
+
+This game is ready for CrazyGames publishing:
+
+- ✅ SDK initialized on game start
+- ✅ Gameplay start/stop tracking
+- ✅ Happy time events on level complete
+- ✅ Ad requests between levels (every 3 levels)
+- ✅ Responsive for all screen sizes
+
+To publish on CrazyGames:
+1. Create account at [CrazyGames.com](https://developer.crazygames.com)
+2. Upload game files
+3. SDK will auto-initialize when hosted on CrazyGames
+
 ## 🛠️ Technologies
 
 - HTML5
 - CSS3 (Animations & Gradients)
 - Vanilla JavaScript (ES6+)
 - Web Audio API
+- CrazyGames SDK (optional)
 
 ## 📱 Compatibility
 
-- ✅ Chrome / Edge / Firefox / Safari
-- ✅ Mobile browsers (iOS Safari, Chrome Mobile)
-- ✅ Responsive design for all screen sizes
+| Platform | Status |
+|----------|--------|
+| Chrome / Edge / Firefox / Safari | ✅ Supported |
+| iOS Safari | ✅ Supported |
+| Chrome Mobile | ✅ Supported |
+| Android WebView | ✅ Supported |
+| Desktop | ✅ Supported |
 
 ## 📝 License
 
@@ -54,3 +75,4 @@ This project is open source. Feel free to fork and modify!
 ---
 
 **Enjoy the game! 🎉**
+
