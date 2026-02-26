@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ball Match 3D v2.3.3</title>
+    <title>Ball Match 3D v2.4</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
         body { font-family: 'Microsoft YaHei', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; overflow: hidden; touch-action: none; }
@@ -80,7 +80,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v2.3.3</div>
+        <div id="versionDisplay">v2.4</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -276,6 +276,8 @@
                             ball.style.height = this.ballSize + 'px';
                             ball.style.left = (offsetX + col * ballTotalSize + layer * layerOffset) + 'px';
                             ball.style.top = (offsetY + row * ballTotalSize + layer * layerOffset) + 'px';
+                            ball.dataset.originalLeft = ball.style.left;
+                            ball.dataset.originalTop = ball.style.top;
                             ball.style.background = ballData[ballIndex].bg;
                             ball.style.zIndex = layer + 1;
                             ball.dataset.color = ballData[ballIndex].name;
@@ -368,8 +370,49 @@
                 if (this.slots.length >= CONFIG.slotCount) { 
                     this.soundManager.playLose(); 
                     CrazySDK.gameEnd();
-                    document.getElementById('gameOverModal').classList.add('show'); 
+                    this.showRevivePrompt();
                 } 
+            }
+            showRevivePrompt() {
+                const modal = document.createElement('div');
+                modal.id = 'reviveModal';
+                modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:3000;';
+                modal.innerHTML = `
+                    <div style="background:linear-gradient(145deg,#ff6b6b,#ee5a5a);padding:35px;border-radius:25px;text-align:center;color:white;max-width:320px;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+                        <h3 style="margin-bottom:15px;font-size:26px;text-shadow:2px 2px 4px rgba(0,0,0,0.3);">💀 Game Over!</h3>
+                        <p style="margin-bottom:25px;opacity:0.95;font-size:16px;">Watch an ad to continue<br>from where you left off</p>
+                        <div style="display:flex;flex-direction:column;gap:12px;">
+                            <button id="reviveBtn" style="padding:14px 28px;border:none;border-radius:25px;background:linear-gradient(145deg,#00cc66,#009944);color:white;font-weight:bold;cursor:pointer;box-shadow:0 4px 15px rgba(0,200,100,0.4);font-size:16px;">📺 Watch Ad & Continue</button>
+                            <button id="giveUpBtn" style="padding:12px 24px;border:none;border-radius:25px;background:rgba(255,255,255,0.2);color:white;cursor:pointer;font-size:14px;">Give Up</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                
+                document.getElementById('reviveBtn').addEventListener('click', () => {
+                    modal.remove();
+                    CrazySDK.requestAd(() => {
+                        // Revive: clear half the slot
+                        const ballsToRemove = Math.floor(this.slots.length / 2);
+                        for (let i = 0; i < ballsToRemove; i++) {
+                            const ball = this.slots.pop();
+                            ball.classList.remove('selected');
+                            ball.style.position = 'absolute';
+                            ball.style.left = ball.dataset.originalLeft || '0px';
+                            ball.style.top = ball.dataset.originalTop || '0px';
+                            document.getElementById('board').appendChild(ball);
+                        }
+                        this.updateSlots();
+                        this.updateClickable();
+                        CrazySDK.gameStart();
+                        this.showComboText('Revived!', '#00cc66');
+                    });
+                });
+                
+                document.getElementById('giveUpBtn').addEventListener('click', () => {
+                    modal.remove();
+                    document.getElementById('gameOverModal').classList.add('show');
+                });
             }
             checkWin() {
                 if (this.balls.length === 0) {
