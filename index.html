@@ -83,7 +83,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-                                                  <div id="versionDisplay">v2.9.14</div>
+                                                     <div id="versionDisplay">v2.9.15</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -932,7 +932,9 @@
                         this.tools = { shuffle: 3, undo: 3, hint: 3 }; 
                         this.combo = 0; 
                         this.hasInteracted = false; 
-                        this.hideTutorial(); 
+                        this.hideTutorial();
+                        // 重新计算球大小
+                        this.handleResize();
                         this.startLevel();
                     });
                 } else {
@@ -940,7 +942,9 @@
                     this.tools = { shuffle: 3, undo: 3, hint: 3 }; 
                     this.combo = 0; 
                     this.hasInteracted = false; 
-                    this.hideTutorial(); 
+                    this.hideTutorial();
+                    // 重新计算球大小
+                    this.handleResize();
                     this.startLevel();
                 }
             }
