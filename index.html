@@ -83,7 +83,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-                                                        <div id="versionDisplay">v2.9.16</div>
+                                                           <div id="versionDisplay">v2.9.17</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -341,7 +341,7 @@
                             ball.dataset.layer = layer;
                             ball.dataset.row = row;
                             ball.dataset.col = col;
-                            ball.textContent = window.innerWidth < 600 ? (savedBall.color === 'cyan' || savedBall.color === 'pink' ? colorData.emoji : '') : colorData.emoji;
+                            ball.textContent = window.innerWidth < 600 ? (['cyan', 'pink', 'orange', 'gold'].includes(savedBall.color) ? colorData.emoji : '') : colorData.emoji;
                             
                             ball.addEventListener('click', (e) => this.onBallClick(e, ball));
                             
@@ -459,7 +459,7 @@
                             ball.dataset.layer = layer;
                             ball.dataset.row = row;
                             ball.dataset.col = col;
-                            ball.textContent = window.innerWidth < 600 ? (ballData[ballIndex].name === 'cyan' || ballData[ballIndex].name === 'pink' ? ballData[ballIndex].emoji : '') : ballData[ballIndex].emoji;
+                            ball.textContent = window.innerWidth < 600 ? (['cyan', 'pink', 'orange', 'gold'].includes(ballData[ballIndex].name) ? ballData[ballIndex].emoji : '') : ballData[ballIndex].emoji;
                             ball.addEventListener('click', (e) => this.onBallClick(e, ball));
                             board.appendChild(ball); this.balls.push(ball); ballIndex++;
                         }
@@ -778,7 +778,7 @@
                     const colorData = CONFIG.colors.find(c => c.name === colors[index]); 
                     ball.dataset.color = colors[index]; 
                     ball.style.background = colorData.bg; 
-                    ball.textContent = window.innerWidth < 600 ? (colorData.name === 'cyan' || colorData.name === 'pink' ? colorData.emoji : '') : colorData.emoji; 
+                    ball.textContent = window.innerWidth < 600 ? (['cyan', 'pink', 'orange', 'gold'].includes(colorData.name) ? colorData.emoji : '') : colorData.emoji; 
                 });
             }
             undo() {
@@ -920,6 +920,7 @@
                 this.startLevel(); 
             }
             nextLevel() { 
+                console.log('nextLevel called, current level:', this.level);
                 // 强制重置 isProcessing，防止卡死
                 this.isProcessing = false;
                 
@@ -927,8 +928,10 @@
                 CrazySDK.levelComplete(this.level);
                 // Show ad between levels (every 3 levels)
                 if (this.level % 3 === 0) {
+                    console.log('Showing ad for level', this.level);
                     CrazySDK.requestAd(() => {
                         this.level++; 
+                        console.log('Ad finished, starting level', this.level);
                         this.tools = { shuffle: 3, undo: 3, hint: 3 }; 
                         this.combo = 0; 
                         this.hasInteracted = false; 
@@ -939,6 +942,7 @@
                     });
                 } else {
                     this.level++; 
+                    console.log('Starting level', this.level);
                     this.tools = { shuffle: 3, undo: 3, hint: 3 }; 
                     this.combo = 0; 
                     this.hasInteracted = false; 
