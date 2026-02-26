@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>球球消消乐 - Ball Match v1.6</title>
+    <title>Ball Match v1.7</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
         body { font-family: 'Microsoft YaHei', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; overflow: hidden; touch-action: none; }
@@ -23,6 +23,7 @@
         .ball.hint { animation: hintPulse 1s ease-in-out infinite; box-shadow: 0 0 20px #FFD700, 0 0 40px #FFD700; }
         .ball.removing { animation: popOut 0.3s ease-out forwards; }
         @keyframes hintPulse { 0%, 100% { box-shadow: 0 0 20px #FFD700; } 50% { box-shadow: 0 0 40px #FFD700, 0 0 60px #FFD700; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateX(-50%) translateY(-10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
         @keyframes bounce { 0%, 100% { transform: scale(1.05) translateY(0); } 50% { transform: scale(1.1) translateY(-5px); } }
         @keyframes popOut { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.25); opacity: 0.9; } 100% { transform: scale(0); opacity: 0; } }
@@ -59,55 +60,55 @@
         #comboText { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: clamp(28px, 9vw, 44px); font-weight: bold; color: #FFD700; text-shadow: 3px 3px 6px rgba(0,0,0,0.5); pointer-events: none; opacity: 0; z-index: 500; }
         .comboShow { animation: comboAnim 1s ease-out forwards; }
         @keyframes comboAnim { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; } 20% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; } 80% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(1) translateY(-40px); opacity: 0; } }
-        #levelProgress { position: absolute; top: 45px; left: 50%; transform: translateX(-50%); color: rgba(255,255,255,0.8); font-size: clamp(11px, 3vw, 13px); background: rgba(0,0,0,0.2); padding: 4px 12px; border-radius: 15px; }
+        #levelProgress { position: absolute; top: 55px; left: 50%; transform: translateX(-50%); color: white; font-size: clamp(12px, 3.5vw, 14px); font-weight: bold; background: linear-gradient(135deg, #ff6b6b, #ee5a5a); padding: 6px 16px; border-radius: 20px; box-shadow: 0 4px 12px rgba(238,90,90,0.4); text-shadow: 1px 1px 2px rgba(0,0,0,0.3); z-index: 50; }
         #versionDisplay { position: fixed; bottom: 5px; right: 10px; color: rgba(255,255,255,0.4); font-size: 10px; z-index: 100; }
         #soundControls { position: fixed; top: 70px; right: 15px; display: flex; gap: 10px; z-index: 200; }
-        .soundBtn { width: 44px; height: 44px; border-radius: 50%; border: none; background: linear-gradient(145deg, #ff6b9d, #c44569); color: white; font-size: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(196,69,105,0.4); transition: all 0.2s; }
-        .soundBtn:hover { transform: scale(1.1); box-shadow: 0 6px 18px rgba(196,69,105,0.6); }
+        .soundBtn { width: 44px; height: 44px; border-radius: 50%; border: none; background: linear-gradient(145deg, #4ecdc4, #44a3aa); color: white; font-size: 20px; cursor: pointer; box-shadow: 0 4px 12px rgba(68,163,170,0.4); transition: all 0.2s; }
+        .soundBtn:hover { transform: scale(1.1); box-shadow: 0 6px 18px rgba(68,163,170,0.6); }
     </style>
 </head>
 <body>
     <div id="startScreen">
-        <h1 id="gameTitle">球球消消乐</h1>
-        <p id="gameSubtitle">点击球球，三个相同颜色即可消除</p>
+        <h1 id="gameTitle">Ball Match</h1>
+        <p id="gameSubtitle">Tap balls to match 3 of the same color</p>
         <div>
             <div class="demoBall" style="background: radial-gradient(circle at 30% 30%, #ff0000, #cc0000);"></div>
             <div class="demoBall" style="background: radial-gradient(circle at 30% 30%, #0066ff, #0044cc);"></div>
             <div class="demoBall" style="background: radial-gradient(circle at 30% 30%, #ffcc00, #ff9900);"></div>
         </div>
-        <button id="startBtn">开始游戏</button>
+        <button id="startBtn">START GAME</button>
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v1.6</div>
+        <div id="versionDisplay">v1.7</div>
         <div id="soundControls">
-            <button class="soundBtn" id="clickSoundBtn" title="点击音效">🔊</button>
-            <button class="soundBtn" id="cheerSoundBtn" title="喝彩音效">🎶</button>
+            <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
+            <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
         </div>
         <div id="topBar">
-            <div id="levelInfo">第 1 关</div>
-            <div id="scoreInfo">得分: 0</div>
+            <div id="levelInfo">Level 1</div>
+            <div id="scoreInfo">Score: 0</div>
         </div>
-        <div id="levelProgress">关卡 1/15</div>
+        <div id="levelProgress">Level 1/15</div>
         <div id="gameArea">
             <div id="board"></div>
         </div>
         <div id="toolsArea">
             <div class="toolWrapper">
                 <button class="toolBtn" id="shuffleBtn">🎲<span class="toolCount" id="shuffleCount">3</span></button>
-                <span class="toolLabel">打乱</span>
+                <span class="toolLabel">Shuffle</span>
             </div>
             <div class="toolWrapper">
                 <button class="toolBtn" id="undoBtn">↩️<span class="toolCount" id="undoCount">3</span></button>
-                <span class="toolLabel">撤销</span>
+                <span class="toolLabel">Undo</span>
             </div>
             <div class="toolWrapper">
                 <button class="toolBtn" id="hintBtn">✨<span class="toolCount" id="hintCount">3</span></button>
-                <span class="toolLabel">提示</span>
+                <span class="toolLabel">Hint</span>
             </div>
         </div>
         <div id="slotArea">
-            <span id="slotLabel">槽位</span>
+            <span id="slotLabel">SLOT</span>
             <div class="slot" data-index="0"></div>
             <div class="slot" data-index="1"></div>
             <div class="slot" data-index="2"></div>
@@ -120,16 +121,16 @@
     <div id="comboText"></div>
     <div id="gameOverModal" class="modal">
         <div class="modalContent">
-            <h2 class="modalTitle">游戏结束</h2>
-            <p class="modalText">槽位已满，再试一次吧！</p>
-            <button class="modalBtn" onclick="game.restart()">再玩一次</button>
+            <h2 class="modalTitle">Game Over</h2>
+            <p class="modalText">Slot is full! Try again.</p>
+            <button class="modalBtn" onclick="game.restart()">Play Again</button>
         </div>
     </div>
     <div id="winModal" class="modal">
         <div class="modalContent">
-            <h2 class="modalTitle" id="winTitle">恭喜通关！</h2>
-            <p class="modalText" id="winText">太棒了！你成功消除了所有球球！</p>
-            <button class="modalBtn" id="nextBtn" onclick="game.nextLevel()">下一关</button>
+            <h2 class="modalTitle" id="winTitle">Level Complete!</h2>
+            <p class="modalText" id="winText">Great job! All balls cleared!</p>
+            <button class="modalBtn" id="nextBtn" onclick="game.nextLevel()">Next Level</button>
         </div>
     </div>
     <script>
@@ -162,25 +163,25 @@
                 { name: 'brown', bg: 'radial-gradient(circle at 30% 30%, #aa6633, #663300)', emoji: '🟤' }
             ],
             levels: [
-                { rows: 3, cols: 5, layers: 1, types: 2, name: "初次体验" },
-                { rows: 3, cols: 5, layers: 1, types: 3, name: "简单上手" },
-                { rows: 3, cols: 5, layers: 2, types: 4, name: "渐入佳境" },
-                { rows: 3, cols: 5, layers: 2, types: 5, name: "稳步前进" },
-                { rows: 4, cols: 5, layers: 2, types: 6, name: "小有成就" },
-                { rows: 4, cols: 6, layers: 3, types: 8, name: "初露锋芒" },
-                { rows: 5, cols: 6, layers: 3, types: 10, name: "挑战开始" },
-                { rows: 5, cols: 6, layers: 4, types: 10, name: "继续加油" },
-                { rows: 6, cols: 7, layers: 5, types: 10, name: "突破自我" },
-                { rows: 6, cols: 7, layers: 6, types: 10, name: "halfway" },
-                { rows: 6, cols: 7, layers: 7, types: 10, name: "困难重重" },
-                { rows: 6, cols: 7, layers: 8, types: 10, name: "登峰造极" },
-                { rows: 6, cols: 7, layers: 9, types: 10, name: "王者之路" },
-                { rows: 6, cols: 7, layers: 10, types: 10, name: "传奇难度" },
-                { rows: 6, cols: 7, layers: 11, types: 10, name: "终极挑战" }
+                { rows: 3, cols: 5, layers: 1, types: 2, name: "First Try" },
+                { rows: 3, cols: 5, layers: 1, types: 3, name: "Easy Start" },
+                { rows: 3, cols: 5, layers: 2, types: 4, name: "Getting There" },
+                { rows: 3, cols: 5, layers: 2, types: 5, name: "Steady Progress" },
+                { rows: 4, cols: 5, layers: 2, types: 6, name: "Small Win" },
+                { rows: 4, cols: 6, layers: 3, types: 8, name: "Show Time" },
+                { rows: 5, cols: 6, layers: 3, types: 10, name: "Challenge Begins" },
+                { rows: 5, cols: 6, layers: 4, types: 10, name: "Keep Going" },
+                { rows: 6, cols: 7, layers: 5, types: 10, name: "Breakthrough" },
+                { rows: 6, cols: 7, layers: 6, types: 10, name: "Halfway" },
+                { rows: 6, cols: 7, layers: 7, types: 10, name: "Tough Road" },
+                { rows: 6, cols: 7, layers: 8, types: 10, name: "Peak Level" },
+                { rows: 6, cols: 7, layers: 9, types: 10, name: "King's Path" },
+                { rows: 6, cols: 7, layers: 10, types: 10, name: "Legendary" },
+                { rows: 6, cols: 7, layers: 11, types: 10, name: "Ultimate" }
             ]
         };
         class Game {
-            constructor() { this.level = 1; this.score = 0; this.balls = []; this.slots = []; this.history = []; this.tools = { shuffle: 3, undo: 3, hint: 3 }; this.isProcessing = false; this.combo = 0; this.lastMatchTime = 0; this.ballSize = 50; this.ballGap = 6; this.soundManager = new SoundManager(); this.init(); }
+            constructor() { this.level = 1; this.score = 0; this.balls = []; this.slots = []; this.history = []; this.tools = { shuffle: 3, undo: 3, hint: 3 }; this.isProcessing = false; this.combo = 0; this.lastMatchTime = 0; this.ballSize = 50; this.ballGap = 6; this.soundManager = new SoundManager(); this.hasInteracted = false; this.tutorialElement = null; this.tutorialTimeout = null; this.init(); }
             init() { this.bindEvents(); this.handleResize(); window.addEventListener('resize', () => this.handleResize()); }
             bindEvents() {
                 document.getElementById('startBtn').addEventListener('click', () => { document.getElementById('startScreen').style.display = 'none'; document.getElementById('gameContainer').style.display = 'flex'; this.soundManager.init(); this.startLevel(); });
@@ -200,7 +201,32 @@
                 document.querySelectorAll('.slot').forEach(slot => { slot.style.width = this.ballSize + 'px'; slot.style.height = this.ballSize + 'px'; });
                 if (this.balls.length > 0 && document.getElementById('gameContainer').style.display !== 'none') this.startLevel();
             }
-            startLevel() { this.generateBoard(CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)]); this.updateUI(); }
+            startLevel() { this.generateBoard(CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)]); this.updateUI(); this.showTutorialIfNeeded(); }
+            showTutorialIfNeeded() {
+                if (this.level === 1 && !this.hasInteracted) {
+                    this.tutorialTimeout = setTimeout(() => {
+                        this.showTutorial();
+                    }, 5000);
+                }
+            }
+            showTutorial() {
+                const tutorial = document.createElement('div');
+                tutorial.id = 'tutorialTip';
+                tutorial.style.cssText = 'position:fixed;top:30%;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#FFD700,#FFA500);color:white;padding:16px 24px;border-radius:16px;font-size:16px;font-weight:bold;z-index:3000;box-shadow:0 8px 32px rgba(0,0,0,0.4);text-align:center;max-width:80%;animation:fadeIn 0.5s ease;';
+                tutorial.innerHTML = '💡 Tap balls of the same color to match 3.<br>Don\'t let the slot get full!';
+                document.body.appendChild(tutorial);
+                this.tutorialElement = tutorial;
+            }
+            hideTutorial() {
+                if (this.tutorialElement) {
+                    this.tutorialElement.remove();
+                    this.tutorialElement = null;
+                }
+                if (this.tutorialTimeout) {
+                    clearTimeout(this.tutorialTimeout);
+                    this.tutorialTimeout = null;
+                }
+            }
             generateBoard(config) {
                 this.balls = []; this.slots = []; this.history = []; this.updateSlots();
                 const board = document.getElementById('board'); board.innerHTML = '';
@@ -269,6 +295,8 @@
             }
             onBallClick(e, ball) {
                 if (this.isProcessing || ball.classList.contains('blocked') || ball.classList.contains('removing') || this.slots.length >= CONFIG.slotCount) return;
+                this.hasInteracted = true;
+                this.hideTutorial();
                 this.soundManager.playClick();
                 this.history.push({ balls: this.balls.map(b => ({ id: b.dataset.id, inSlot: this.slots.includes(b), slotIndex: this.slots.indexOf(b) })), slots: [...this.slots], score: this.score });
                 this.slots.push(ball); this.updateSlots();
@@ -334,7 +362,7 @@
                         document.getElementById('nextBtn').onclick = () => { this.level = 1; this.score = 0; document.getElementById('winModal').classList.remove('show'); this.startLevel(); };
                     } else {
                         document.getElementById('winTitle').textContent = `恭喜通过第 ${this.level} 关！`;
-                        document.getElementById('winText').textContent = `关卡: ${levelConfig.name} | 得分: ${this.score}`;
+                        document.getElementById('winText').textContent = `Level: ${levelConfig.name} | Score: ${this.score}`;
                         document.getElementById('nextBtn').textContent = '下一关';
                         document.getElementById('nextBtn').onclick = () => this.nextLevel();
                     }
@@ -472,9 +500,9 @@
                 setTimeout(() => comboText.classList.remove('comboShow'), 1000);
             }
             updateUI() {
-                document.getElementById('levelInfo').textContent = `第 ${this.level} 关`;
-                document.getElementById('scoreInfo').textContent = `得分: ${this.score}`;
-                document.getElementById('levelProgress').textContent = `关卡 ${this.level}/${CONFIG.levels.length}`;
+                document.getElementById('levelInfo').textContent = `Level ${this.level}`;
+                document.getElementById('scoreInfo').textContent = `Score: ${this.score}`;
+                document.getElementById('levelProgress').textContent = `Level ${this.level}/${CONFIG.levels.length}`;
                 document.getElementById('shuffleCount').textContent = this.tools.shuffle;
                 document.getElementById('undoCount').textContent = this.tools.undo;
                 document.getElementById('hintCount').textContent = this.tools.hint;
@@ -482,8 +510,8 @@
                 document.getElementById('undoBtn').disabled = this.tools.undo <= 0;
                 document.getElementById('hintBtn').disabled = this.tools.hint <= 0;
             }
-            restart() { document.getElementById('gameOverModal').classList.remove('show'); this.tools = { shuffle: 3, undo: 3, hint: 3 }; this.score = 0; this.combo = 0; this.startLevel(); }
-            nextLevel() { document.getElementById('winModal').classList.remove('show'); this.level++; this.tools = { shuffle: 3, undo: 3, hint: 3 }; this.combo = 0; this.startLevel(); }
+            restart() { document.getElementById('gameOverModal').classList.remove('show'); this.tools = { shuffle: 3, undo: 3, hint: 3 }; this.score = 0; this.combo = 0; this.hasInteracted = false; this.hideTutorial(); this.startLevel(); }
+            nextLevel() { document.getElementById('winModal').classList.remove('show'); this.level++; this.tools = { shuffle: 3, undo: 3, hint: 3 }; this.combo = 0; this.hasInteracted = false; this.hideTutorial(); this.startLevel(); }
         }
         const game = new Game();
         if (typeof window.CrazyGames !== 'undefined') window.CrazyGames.SDK.init();
