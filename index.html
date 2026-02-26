@@ -83,7 +83,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-           <div id="versionDisplay">v2.9.1</div>
+              <div id="versionDisplay">v2.9.2</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -212,7 +212,7 @@
             ]
         };
         class Game {
-            constructor() { this.level = 1; this.score = 0; this.balls = []; this.slots = []; this.history = []; this.tools = { shuffle: 3, undo: 3, hint: 3 }; this.isProcessing = false; this.combo = 0; this.lastMatchTime = 0; this.ballSize = 50; this.ballGap = 6; this.soundManager = new SoundManager(); this.hasInteracted = false; this.tutorialElement = null; this.tutorialTimeout = null; this.init(); }
+            constructor() { this.level = 1; this.score = 0; this.balls = []; this.slots = []; this.history = []; this.tools = { shuffle: 3, undo: 3, hint: 3 }; this.isProcessing = false; this.combo = 0; this.lastMatchTime = 0; this.ballSize = 50; this.ballGap = 6; this.soundManager = new SoundManager(); this.hasInteracted = false; this.tutorialElement = null; this.tutorialTimeout = null; this.resizeTimeout = null; this.init(); }
             init() { this.bindEvents(); this.handleResize(); window.addEventListener('resize', () => this.handleResize()); }
             bindEvents() {
                 document.getElementById('startBtn').addEventListener('click', () => { 
@@ -255,10 +255,12 @@
                 }
                 
                 document.querySelectorAll('.slot').forEach(slot => { slot.style.width = this.ballSize + 'px'; slot.style.height = this.ballSize + 'px'; });
-                // 避免频繁重新渲染，只在必要时更新
+                // 使用防抖避免频繁重新渲染
+                if (this.resizeTimeout) clearTimeout(this.resizeTimeout);
                 if (this.balls.length > 0 && document.getElementById('gameContainer').style.display !== 'none' && !this.isProcessing) {
-                    // 使用 requestAnimationFrame 优化性能
-                    requestAnimationFrame(() => this.regenerateBoardWithNewSize());
+                    this.resizeTimeout = setTimeout(() => {
+                        requestAnimationFrame(() => this.regenerateBoardWithNewSize());
+                    }, 200);
                 }
             }
             regenerateBoardWithNewSize() {
@@ -486,24 +488,6 @@
                     }
                 });
             }
-            getBlockingLayer(ball) {
-                const layer = parseInt(ball.dataset.layer);
-                const row = parseInt(ball.dataset.row);
-                const col = parseInt(ball.dataset.col);
-                
-                // 从紧邻下一层开始检查
-                for (let l = layer + 1; l < CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)].layers; l++) {
-                    const covering = this.balls.filter(b => 
-                        parseInt(b.dataset.layer) === l && 
-                        !b.classList.contains('removing') && 
-                        !this.slots.includes(b) && 
-                        Math.abs(parseInt(b.dataset.row) - row) <= 1 && 
-                        Math.abs(parseInt(b.dataset.col) - col) <= 1
-                    );
-                    if (covering.length > 0) return l;
-                }
-                return -1;
-            }
             isBallBlocked(ball) {
                 if (this.slots.includes(ball)) return false;
                 const layer = parseInt(ball.dataset.layer);
@@ -511,18 +495,22 @@
                 const col = parseInt(ball.dataset.col);
                 const nextLayer = layer + 1;
                 
-                if (nextLayer >= CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)].layers) {
+                const maxLayers = CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)].layers;
+                if (nextLayer >= maxLayers) {
                     return false;
                 }
                 
-                const covering = this.balls.filter(b => 
-                    parseInt(b.dataset.layer) === nextLayer && 
-                    !b.classList.contains('removing') && 
-                    !this.slots.includes(b) && 
-                    Math.abs(parseInt(b.dataset.row) - row) <= 1 && 
-                    Math.abs(parseInt(b.dataset.col) - col) <= 1
-                );
-                return covering.length > 0;
+                // 使用 for 循环代替 filter 提高性能
+                for (const b of this.balls) {
+                    if (parseInt(b.dataset.layer) === nextLayer && 
+                        !b.classList.contains('removing') && 
+                        !this.slots.includes(b) && 
+                        Math.abs(parseInt(b.dataset.row) - row) <= 1 && 
+                        Math.abs(parseInt(b.dataset.col) - col) <= 1) {
+                        return true;
+                    }
+                }
+                return false;
             }
             onBallClick(e, ball) {
                 if (this.isProcessing || ball.classList.contains('blocked') || ball.classList.contains('removing') || this.slots.length >= CONFIG.slotCount) return;
