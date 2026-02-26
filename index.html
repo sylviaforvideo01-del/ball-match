@@ -82,7 +82,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v2.7.9</div>
+        <div id="versionDisplay">v2.8.1</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -535,8 +535,18 @@
                 document.getElementById('reviveBtn').addEventListener('click', () => {
                     modal.remove();
                     CrazySDK.requestAd(() => {
-                        // Revive: clear half the slot
-                        const ballsToRemove = Math.floor(this.slots.length / 2);
+                        // Revive: 计算需要移除的球数，确保剩余球数是3的倍数
+                        const slotCount = this.slots.length;
+                        // 找到最大的移除数量，使得剩余数量是3的倍数
+                        let ballsToRemove = Math.floor(slotCount / 2);
+                        while ((slotCount - ballsToRemove) % 3 !== 0 && ballsToRemove > 0) {
+                            ballsToRemove--;
+                        }
+                        // 如果无法找到合适的数量，移除全部
+                        if (ballsToRemove === 0) {
+                            ballsToRemove = slotCount;
+                        }
+                        
                         for (let i = 0; i < ballsToRemove; i++) {
                             const ball = this.slots.pop();
                             ball.classList.remove('selected');
