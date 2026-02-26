@@ -98,7 +98,7 @@
 
     <div id="gameContainer" style="display: none;">
         <button id="exitBtn">Exit</button>
-        <div id="versionDisplay">v3.0.2</div>
+        <div id="versionDisplay">v3.0.3</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -1217,25 +1217,9 @@
 
                 document.getElementById('winModal').classList.remove('show');
                 CrazySDK.levelComplete(this.level);
-                // Show ad between levels (every 3 levels)
-                if (this.level % 3 === 0) {
-                    console.log('Showing ad for level', this.level);
-                    CrazySDK.requestAd(() => {
-                        this.level++;
-                        console.log('Ad finished, starting level', this.level);
-                        this.tools = { shuffle: 3, undo: 3, hint: 3 };
-                        this.combo = 0;
-                        this.hasInteracted = false;
-                        this.hideTutorial();
-                        // 更新用户信息显示
-                        this.showUserInfo();
-                        // 延迟重新计算球大小，确保 DOM 已更新
-                        setTimeout(() => {
-                            this.handleResize();
-                            this.startLevel();
-                        }, 100);
-                    });
-                } else {
+
+                // 定义进入下一关的函数
+                const goToNextLevel = () => {
                     this.level++;
                     console.log('Starting level', this.level);
                     this.tools = { shuffle: 3, undo: 3, hint: 3 };
@@ -1249,6 +1233,23 @@
                         this.handleResize();
                         this.startLevel();
                     }, 100);
+                };
+
+                // Show ad between levels (every 3 levels)
+                if (this.level % 3 === 0) {
+                    console.log('Showing ad for level', this.level);
+                    // 设置超时，确保即使广告不加载也能进入下一关
+                    const adTimeout = setTimeout(() => {
+                        console.log('Ad timeout, proceeding to next level');
+                        goToNextLevel();
+                    }, 5000); // 5秒超时
+
+                    CrazySDK.requestAd(() => {
+                        clearTimeout(adTimeout);
+                        goToNextLevel();
+                    });
+                } else {
+                    goToNextLevel();
                 }
             }
         }
