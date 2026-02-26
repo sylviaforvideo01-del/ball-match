@@ -49,6 +49,18 @@
         .modalText { font-size: clamp(13px, 3.5vw, 15px); margin-bottom: 22px; opacity: 0.9; }
         .modalBtn { padding: clamp(10px, 3.5vw, 14px) clamp(25px, 7vw, 35px); font-size: clamp(15px, 4vw, 17px); border: none; border-radius: 30px; background: linear-gradient(145deg, #FFD700, #FFA500); color: white; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(255, 165, 0, 0.4); transition: all 0.2s; }
         .modalBtn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(255, 165, 0, 0.6); }
+        .modalBtn.secondary { background: linear-gradient(145deg, #667eea, #764ba2); box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4); }
+        .modalBtn.secondary:hover { box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6); }
+        #usernameInput { width: 100%; padding: 12px; border: 2px solid rgba(255,255,255,0.3); border-radius: 10px; background: rgba(255,255,255,0.1); color: white; font-size: 16px; margin: 10px 0; text-align: center; }
+        #usernameInput::placeholder { color: rgba(255,255,255,0.6); }
+        #usernameInput:focus { outline: none; border-color: #FFD700; }
+        .userInfo { position: fixed; top: 10px; left: 10px; background: rgba(0,0,0,0.5); padding: 8px 12px; border-radius: 20px; color: white; font-size: 12px; z-index: 100; }
+        .levelSelect { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; max-height: 300px; overflow-y: auto; padding: 10px; }
+        .levelBtn { padding: 10px; border: none; border-radius: 10px; background: linear-gradient(145deg, #667eea, #764ba2); color: white; cursor: pointer; font-weight: bold; }
+        .levelBtn:hover { transform: scale(1.05); }
+        .levelBtn.completed { background: linear-gradient(145deg, #00cc66, #009944); }
+        .levelBtn.current { background: linear-gradient(145deg, #FFD700, #FFA500); }
+        .modalBtn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(255, 165, 0, 0.6); }
         #startScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
         #gameTitle { font-size: clamp(28px, 9vw, 44px); color: white; text-shadow: 3px 3px 6px rgba(0,0,0,0.3); margin-bottom: 12px; text-align: center; }
         #gameSubtitle { font-size: clamp(13px, 3.5vw, 16px); color: rgba(255,255,255,0.8); margin-bottom: 35px; text-align: center; }
@@ -83,7 +95,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-                                                                    <div id="versionDisplay">v2.9.25</div>
+                                                                    <div id="versionDisplay">v3.0.0</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -252,17 +264,182 @@
             ]
         };
         class Game {
-            constructor() { this.level = 1; this.score = 0; this.balls = []; this.slots = []; this.history = []; this.tools = { shuffle: 3, undo: 3, hint: 3 }; this.isProcessing = false; this.combo = 0; this.lastMatchTime = 0; this.ballSize = 50; this.ballGap = 6; this.soundManager = new SoundManager(); this.hasInteracted = false; this.tutorialElement = null; this.tutorialTimeout = null; this.resizeTimeout = null; this.init(); }
+            constructor() { 
+                this.level = 1; 
+                this.score = 0; 
+                this.balls = []; 
+                this.slots = []; 
+                this.history = []; 
+                this.tools = { shuffle: 3, undo: 3, hint: 3 }; 
+                this.isProcessing = false; 
+                this.combo = 0; 
+                this.lastMatchTime = 0; 
+                this.ballSize = 50; 
+                this.ballGap = 6; 
+                this.soundManager = new SoundManager(); 
+                this.hasInteracted = false; 
+                this.tutorialElement = null; 
+                this.tutorialTimeout = null; 
+                this.resizeTimeout = null;
+                // 用户系统
+                this.username = null;
+                this.isAdmin = false;
+                this.userProgress = this.loadUserProgress();
+                this.init(); 
+            }
+            
+            // 用户系统方法
+            loadUserProgress() {
+                const saved = localStorage.getItem('ballMatchUsers');
+                return saved ? JSON.parse(saved) : {};
+            }
+            
+            saveUserProgress() {
+                if (this.username && !this.isAdmin) {
+                    this.userProgress[this.username] = {
+                        level: this.level,
+                        score: this.score,
+                        lastPlayed: new Date().toISOString()
+                    };
+                    localStorage.setItem('ballMatchUsers', JSON.stringify(this.userProgress));
+                }
+            }
+            
+            showUsernameModal() {
+                const modal = document.createElement('div');
+                modal.id = 'usernameModal';
+                modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:5000;';
+                modal.innerHTML = `
+                    <div style="background:linear-gradient(145deg,#667eea,#764ba2);padding:35px;border-radius:25px;text-align:center;color:white;max-width:340px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+                        <h3 style="margin-bottom:15px;font-size:24px;text-shadow:2px 2px 4px rgba(0,0,0,0.3);">👤 输入用户名</h3>
+                        <p style="margin-bottom:20px;opacity:0.9;font-size:14px;">输入用户名以保存游戏进度<br>或点击"跳过"以游客身份游玩</p>
+                        <input type="text" id="usernameInput" placeholder="输入用户名" maxlength="20" autocomplete="off">
+                        <p id="usernameError" style="color:#ff6b6b;font-size:12px;margin:5px 0;min-height:18px;"></p>
+                        <div style="display:flex;flex-direction:column;gap:10px;margin-top:15px;">
+                            <button id="confirmUsernameBtn" style="padding:12px 24px;border:none;border-radius:25px;background:linear-gradient(145deg,#00cc66,#009944);color:white;font-weight:bold;cursor:pointer;box-shadow:0 4px 15px rgba(0,200,100,0.4);font-size:16px;">✅ 确认</button>
+                            <button id="skipUsernameBtn" style="padding:10px 24px;border:none;border-radius:25px;background:rgba(255,255,255,0.2);color:white;cursor:pointer;font-size:14px;">⏭️ 跳过（不保存进度）</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                
+                const input = document.getElementById('usernameInput');
+                const error = document.getElementById('usernameError');
+                
+                document.getElementById('confirmUsernameBtn').addEventListener('click', () => {
+                    const username = input.value.trim();
+                    if (!username) {
+                        error.textContent = '请输入用户名';
+                        return;
+                    }
+                    if (username === 'sylviaguanlizhe') {
+                        this.username = username;
+                        this.isAdmin = true;
+                        this.level = 1;
+                        modal.remove();
+                        this.showAdminPanel();
+                        return;
+                    }
+                    // 检查用户名是否已存在
+                    if (this.userProgress[username] && !confirm('该用户名已存在，是否继续之前的进度？')) {
+                        error.textContent = '请使用其他用户名';
+                        return;
+                    }
+                    this.username = username;
+                    this.isAdmin = false;
+                    // 加载用户进度
+                    if (this.userProgress[username]) {
+                        this.level = this.userProgress[username].level || 1;
+                        this.score = this.userProgress[username].score || 0;
+                    }
+                    modal.remove();
+                    this.showUserInfo();
+                    this.startGame();
+                });
+                
+                document.getElementById('skipUsernameBtn').addEventListener('click', () => {
+                    this.username = null;
+                    this.isAdmin = false;
+                    this.level = 1;
+                    this.score = 0;
+                    modal.remove();
+                    alert('⚠️ 游客模式：游戏进度将不会被保存');
+                    this.startGame();
+                });
+                
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        document.getElementById('confirmUsernameBtn').click();
+                    }
+                });
+                
+                input.focus();
+            }
+            
+            showAdminPanel() {
+                const modal = document.createElement('div');
+                modal.id = 'adminModal';
+                modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:5000;';
+                
+                let levelButtons = '';
+                for (let i = 1; i <= CONFIG.levels.length; i++) {
+                    levelButtons += `<button class="levelBtn" data-level="${i}">${i}</button>`;
+                }
+                
+                modal.innerHTML = `
+                    <div style="background:linear-gradient(145deg,#ff6b6b,#ee5a5a);padding:35px;border-radius:25px;text-align:center;color:white;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
+                        <h3 style="margin-bottom:15px;font-size:24px;text-shadow:2px 2px 4px rgba(0,0,0,0.3);">👑 管理者面板</h3>
+                        <p style="margin-bottom:20px;opacity:0.9;font-size:14px;">欢迎，sylviaguanlizhe<br>请选择要跳转的关卡</p>
+                        <div class="levelSelect">${levelButtons}</div>
+                        <button id="closeAdminBtn" style="margin-top:20px;padding:10px 24px;border:none;border-radius:25px;background:rgba(255,255,255,0.2);color:white;cursor:pointer;font-size:14px;">关闭</button>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                
+                modal.querySelectorAll('.levelBtn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        this.level = parseInt(btn.dataset.level);
+                        modal.remove();
+                        this.showUserInfo();
+                        this.startGame();
+                    });
+                });
+                
+                document.getElementById('closeAdminBtn').addEventListener('click', () => {
+                    modal.remove();
+                    this.showUsernameModal();
+                });
+            }
+            
+            showUserInfo() {
+                // 移除已存在的用户信息
+                const existing = document.getElementById('userInfo');
+                if (existing) existing.remove();
+                
+                if (this.username) {
+                    const userInfo = document.createElement('div');
+                    userInfo.id = 'userInfo';
+                    userInfo.className = 'userInfo';
+                    userInfo.innerHTML = this.isAdmin 
+                        ? `👑 ${this.username} | 关卡 ${this.level}`
+                        : `👤 ${this.username} | 关卡 ${this.level}`;
+                    document.body.appendChild(userInfo);
+                }
+            }
+            
+            startGame() {
+                document.getElementById('startScreen').style.display = 'none';
+                document.getElementById('gameContainer').style.display = 'flex';
+                this.soundManager.init();
+                this.soundManager.playClick();
+                CrazySDK.gameStart();
+                this.startLevel();
+            }
+            
             init() { this.bindEvents(); this.handleResize(); window.addEventListener('resize', () => this.handleResize()); }
             bindEvents() {
                 document.getElementById('startBtn').addEventListener('click', () => { 
-                    document.getElementById('startScreen').style.display = 'none'; 
-                    document.getElementById('gameContainer').style.display = 'flex'; 
-                    // 初始化音频并播放点击音效
-                    this.soundManager.init(); 
-                    this.soundManager.playClick();
-                    CrazySDK.gameStart();
-                    this.startLevel(); 
+                    this.showUsernameModal();
                 });
                 document.getElementById('shuffleBtn').addEventListener('click', () => { this.soundManager.playTool(); this.useTool('shuffle'); });
                 document.getElementById('undoBtn').addEventListener('click', () => { this.soundManager.playTool(); this.useTool('undo'); });
@@ -741,6 +918,9 @@
                     const levelConfig = CONFIG.levels[Math.min(this.level - 1, CONFIG.levels.length - 1)];
                     const nextBtn = document.getElementById('nextBtn');
                     
+                    // 保存进度
+                    this.saveUserProgress();
+                    
                     if (this.level >= CONFIG.levels.length) {
                         document.getElementById('winTitle').textContent = '🎉 All 15 Levels Cleared!';
                         document.getElementById('winText').textContent = `Final Score: ${this.score}`;
@@ -983,6 +1163,8 @@
                         this.combo = 0; 
                         this.hasInteracted = false; 
                         this.hideTutorial();
+                        // 更新用户信息显示
+                        this.showUserInfo();
                         // 延迟重新计算球大小，确保 DOM 已更新
                         setTimeout(() => {
                             this.handleResize();
@@ -996,6 +1178,8 @@
                     this.combo = 0; 
                     this.hasInteracted = false; 
                     this.hideTutorial();
+                    // 更新用户信息显示
+                    this.showUserInfo();
                     // 延迟重新计算球大小，确保 DOM 已更新
                     setTimeout(() => {
                         this.handleResize();
