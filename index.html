@@ -423,56 +423,33 @@
                 `;
                 document.body.appendChild(modal);
                 
-                // 使用 FastClick 风格的触摸处理
-                const fastClick = (element, handler) => {
-                    let startX, startY, startTime;
-                    
-                    element.addEventListener('touchstart', (e) => {
-                        startX = e.touches[0].clientX;
-                        startY = e.touches[0].clientY;
-                        startTime = Date.now();
-                    }, { passive: true });
-                    
-                    element.addEventListener('touchend', (e) => {
-                        const endX = e.changedTouches[0].clientX;
-                        const endY = e.changedTouches[0].clientY;
-                        const endTime = Date.now();
-                        
-                        // 检查是否是点击（不是滑动）
-                        const deltaX = Math.abs(endX - startX);
-                        const deltaY = Math.abs(endY - startY);
-                        const deltaTime = endTime - startTime;
-                        
-                        if (deltaX < 10 && deltaY < 10 && deltaTime < 300) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handler(e);
-                        }
-                    }, { passive: false });
-                    
-                    element.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handler(e);
-                    });
-                };
-                
-                // 为每个关卡按钮绑定
-                modal.querySelectorAll('.admin-level-btn').forEach(btn => {
-                    fastClick(btn, () => {
+                // 为每个关卡按钮绑定点击和触摸事件（移动端兼容）
+                const levelBtns = modal.querySelectorAll('.admin-level-btn');
+                levelBtns.forEach(btn => {
+                    const selectLevel = (e) => {
                         const level = parseInt(btn.dataset.level);
                         console.log('Admin selected level:', level);
                         this.level = level;
                         modal.remove();
                         this.startGame();
+                    };
+                    
+                    // 同时绑定 click 和 touchend，确保移动端响应
+                    btn.addEventListener('click', selectLevel);
+                    btn.addEventListener('touchend', (e) => {
+                        // 不阻止冒泡，只执行处理函数
+                        selectLevel(e);
                     });
                 });
-                
+
                 // 绑定关闭按钮
-                fastClick(modal.querySelector('.admin-close-btn'), () => {
+                const closeBtn = modal.querySelector('.admin-close-btn');
+                const handleClose = () => {
                     modal.remove();
                     this.showUsernameModal();
-                });
+                };
+                closeBtn.addEventListener('click', handleClose);
+                closeBtn.addEventListener('touchend', handleClose);
             }
 
             showUserInfo() {
