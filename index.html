@@ -82,6 +82,15 @@
         .soundBtn:hover { transform: scale(1.15); box-shadow: 0 8px 25px rgba(102,126,234,0.7), inset 0 2px 4px rgba(255,255,255,0.4); }
         #exitBtn { position: fixed; top: 115px; right: 10px; padding: 8px 16px; border: none; border-radius: 20px; background: linear-gradient(145deg, #ff4757, #ff3838); color: white; font-size: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(255,71,87,0.4); transition: all 0.2s; z-index: 201; }
         #exitBtn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(255,71,87,0.6); }
+        /* Admin Panel Styles */
+        .admin-panel { background: linear-gradient(145deg,#ff6b6b,#ee5a5a); padding: 15px; border-radius: 15px; text-align: center; color: white; max-width: 95%; width: 320px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+        .admin-panel h3 { margin-bottom: 8px; font-size: 18px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .admin-panel p { margin-bottom: 12px; opacity: 0.9; font-size: 13px; }
+        .admin-level-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 5px; }
+        .admin-level-btn { padding: 6px 2px; border-radius: 6px; background: linear-gradient(145deg,#667eea,#764ba2); color: white; font-weight: bold; font-size: 13px; min-width: 32px; min-height: 32px; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; user-select: none; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.3); transition: transform 0.1s; }
+        .admin-level-btn:active { transform: scale(0.95); background: linear-gradient(145deg,#764ba2,#667eea); }
+        .admin-close-btn { margin-top: 12px; padding: 8px 20px; border-radius: 15px; background: rgba(255,255,255,0.3); color: white; font-size: 13px; font-weight: bold; -webkit-tap-highlight-color: transparent; user-select: none; cursor: pointer; display: inline-block; transition: transform 0.1s; }
+        .admin-close-btn:active { transform: scale(0.95); background: rgba(255,255,255,0.4); }
     </style>
 </head>
 <body>
@@ -401,56 +410,69 @@
                 
                 let levelButtons = '';
                 for (let i = 1; i <= CONFIG.levels.length; i++) {
-                    levelButtons += `<div class="levelBtnWrapper" data-level="${i}" style="padding:8px 4px;border-radius:8px;background:linear-gradient(145deg,#667eea,#764ba2);color:white;font-weight:bold;font-size:14px;min-width:36px;min-height:36px;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;user-select:none;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.3);">${i}</div>`;
+                    levelButtons += `<div class="admin-level-btn" data-level="${i}">${i}</div>`;
                 }
                 
                 modal.innerHTML = `
-                    <div style="background:linear-gradient(145deg,#ff6b6b,#ee5a5a);padding:20px;border-radius:20px;text-align:center;color:white;max-width:95%;width:340px;box-shadow:0 20px 60px rgba(0,0,0,0.5);">
-                        <h3 style="margin-bottom:10px;font-size:20px;text-shadow:2px 2px 4px rgba(0,0,0,0.3);">👑 Admin Panel</h3>
-                        <p style="margin-bottom:15px;opacity:0.9;font-size:14px;">Welcome, sylviaguanlizhe<br>Select a level</p>
-                        <div id="adminLevelGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:5px;">${levelButtons}</div>
-                        <div id="closeAdminBtn" style="margin-top:15px;padding:10px 25px;border-radius:20px;background:rgba(255,255,255,0.3);color:white;font-size:14px;font-weight:bold;-webkit-tap-highlight-color:transparent;user-select:none;cursor:pointer;display:inline-block;">Close</div>
+                    <div class="admin-panel">
+                        <h3>👑 Admin Panel</h3>
+                        <p>Welcome, sylviaguanlizhe<br>Select a level</p>
+                        <div class="admin-level-grid">${levelButtons}</div>
+                        <div class="admin-close-btn">Close</div>
                     </div>
                 `;
                 document.body.appendChild(modal);
                 
-                // 为每个关卡按钮单独绑定触摸和点击事件
-                const levelBtns = modal.querySelectorAll('.levelBtnWrapper');
-                levelBtns.forEach(btn => {
-                    const selectLevel = (e) => {
+                // 使用 FastClick 风格的触摸处理
+                const fastClick = (element, handler) => {
+                    let startX, startY, startTime;
+                    
+                    element.addEventListener('touchstart', (e) => {
+                        startX = e.touches[0].clientX;
+                        startY = e.touches[0].clientY;
+                        startTime = Date.now();
+                    }, { passive: true });
+                    
+                    element.addEventListener('touchend', (e) => {
+                        const endX = e.changedTouches[0].clientX;
+                        const endY = e.changedTouches[0].clientY;
+                        const endTime = Date.now();
+                        
+                        // 检查是否是点击（不是滑动）
+                        const deltaX = Math.abs(endX - startX);
+                        const deltaY = Math.abs(endY - startY);
+                        const deltaTime = endTime - startTime;
+                        
+                        if (deltaX < 10 && deltaY < 10 && deltaTime < 300) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handler(e);
+                        }
+                    }, { passive: false });
+                    
+                    element.addEventListener('click', (e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        handler(e);
+                    });
+                };
+                
+                // 为每个关卡按钮绑定
+                modal.querySelectorAll('.admin-level-btn').forEach(btn => {
+                    fastClick(btn, () => {
                         const level = parseInt(btn.dataset.level);
                         console.log('Admin selected level:', level);
                         this.level = level;
                         modal.remove();
                         this.startGame();
-                    };
-                    
-                    // 绑定点击事件
-                    btn.addEventListener('click', selectLevel);
-                    // 移动端触摸事件
-                    btn.addEventListener('touchstart', () => {}, { passive: true });
-                    btn.addEventListener('touchend', (e) => {
-                        e.preventDefault();
-                        selectLevel(e);
-                    }, { passive: false });
+                    });
                 });
-
+                
                 // 绑定关闭按钮
-                const closeBtn = modal.querySelector('#closeAdminBtn');
-                const handleClose = (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+                fastClick(modal.querySelector('.admin-close-btn'), () => {
                     modal.remove();
                     this.showUsernameModal();
-                };
-                closeBtn.addEventListener('click', handleClose);
-                closeBtn.addEventListener('touchstart', () => {}, { passive: true });
-                closeBtn.addEventListener('touchend', (e) => {
-                    e.preventDefault();
-                    handleClose(e);
-                }, { passive: false });
+                });
             }
 
             showUserInfo() {
