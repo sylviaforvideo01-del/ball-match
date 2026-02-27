@@ -414,9 +414,9 @@
                 `;
                 document.body.appendChild(modal);
                 
-                // 使用事件委托绑定点击
+                // 使用事件委托绑定点击和触摸事件（移动端兼容）
                 const levelGrid = modal.querySelector('#adminLevelGrid');
-                levelGrid.addEventListener('click', (e) => {
+                const handleLevelSelect = (e) => {
                     const btn = e.target.closest('.levelBtn');
                     if (btn) {
                         e.preventDefault();
@@ -427,17 +427,21 @@
                         modal.remove();
                         this.startGame();
                     }
-                });
-                
+                };
+                levelGrid.addEventListener('click', handleLevelSelect);
+                levelGrid.addEventListener('touchend', handleLevelSelect, { passive: false });
+
                 // 绑定关闭按钮
                 const closeBtn = modal.querySelector('#closeAdminBtn');
-                closeBtn.addEventListener('click', (e) => {
+                const handleClose = (e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     modal.remove();
                     this.showUsernameModal();
-                });
-                
+                };
+                closeBtn.addEventListener('click', handleClose);
+                closeBtn.addEventListener('touchend', handleClose, { passive: false });
+
                 // 阻止背景点击关闭
                 modal.addEventListener('click', (e) => {
                     if (e.target === modal) {
@@ -445,6 +449,12 @@
                         e.stopPropagation();
                     }
                 });
+                modal.addEventListener('touchend', (e) => {
+                    if (e.target === modal) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                }, { passive: false });
             }
 
             showUserInfo() {
