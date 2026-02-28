@@ -244,20 +244,20 @@
         const CONFIG = {
             slotCount: 7,
             colors: [
-                { name: 'neon', bg: 'radial-gradient(circle at 30% 30%, #ccff00, #88cc00)', emoji: '⚡' },
-                { name: 'prism', bg: 'radial-gradient(circle at 30% 30%, #e0e0ff, #a0a0cc)', emoji: '💠' },
-                { name: 'magma', bg: 'radial-gradient(circle at 30% 30%, #ff4400, #aa2200)', emoji: '🔥' },
-                { name: 'plasma', bg: 'radial-gradient(circle at 30% 30%, #00aaff, #0066cc)', emoji: '⚡' },
-                { name: 'cosmic', bg: 'radial-gradient(circle at 30% 30%, #8844ff, #4422aa)', emoji: '🌌' },
-                { name: 'digital', bg: 'radial-gradient(circle at 30% 30%, #00ffcc, #00aa88)', emoji: '💾' },
-                { name: 'metallic', bg: 'radial-gradient(circle at 30% 30%, #888888, #444444)', emoji: '⚙️' },
-                { name: 'lava', bg: 'radial-gradient(circle at 30% 30%, #ffaa00, #cc6600)', emoji: '🌋' },
-                { name: 'bubble', bg: 'radial-gradient(circle at 30% 30%, #ff99cc, #cc6699)', emoji: '🫧' },
-                { name: 'galaxy', bg: 'radial-gradient(circle at 30% 30%, #6688ff, #2233aa)', emoji: '🌠' },
-                { name: 'water', bg: 'radial-gradient(circle at 30% 30%, #44ccff, #0088cc)', emoji: '💧' },
-                { name: 'emerald', bg: 'radial-gradient(circle at 30% 30%, #00cc66, #008844)', emoji: '💚' },
-                { name: 'golden', bg: 'radial-gradient(circle at 30% 30%, #ffcc00, #cc9900)', emoji: '🪲' },
-                { name: 'rainbow', bg: 'linear-gradient(180deg, #ff0000, #ff8800, #ffff00, #00ff00, #0088ff, #8800ff)', emoji: '🌈' }
+                { name: 'neon', image: 'balls/neon.png', emoji: '' },
+                { name: 'prism', image: 'balls/prism.png', emoji: '' },
+                { name: 'magma', image: 'balls/magma.png', emoji: '' },
+                { name: 'plasma', image: 'balls/plasma.png', emoji: '' },
+                { name: 'cosmic', image: 'balls/cosmic.png', emoji: '' },
+                { name: 'digital', image: 'balls/digital.png', emoji: '' },
+                { name: 'metallic', image: 'balls/metallic.png', emoji: '' },
+                { name: 'lava', image: 'balls/lava.png', emoji: '' },
+                { name: 'bubble', image: 'balls/bubble.png', emoji: '' },
+                { name: 'galaxy', image: 'balls/galaxy.png', emoji: '' },
+                { name: 'water', image: 'balls/water.png', emoji: '' },
+                { name: 'emerald', image: 'balls/emerald.png', emoji: '' },
+                { name: 'golden', image: 'balls/golden.png', emoji: '' },
+                { name: 'rainbow', image: 'balls/rainbow.png', emoji: '' }
             ],
             levels: [
                 { rows: 3, cols: 5, layers: 1, types: 2, name: "Level 1" },
@@ -652,7 +652,14 @@
 
                             // 恢复颜色
                             const colorData = CONFIG.colors.find(c => c.name === savedBall.color);
-                            ball.style.background = colorData.bg;
+                            if (colorData.image) {
+                                ball.style.backgroundImage = `url(${colorData.image})`;
+                                ball.style.backgroundSize = 'cover';
+                                ball.style.backgroundPosition = 'center';
+                                ball.style.backgroundColor = 'transparent';
+                            } else {
+                                ball.style.background = colorData.bg;
+                            }
                             ball.style.zIndex = layer + 1;
                             ball.dataset.color = savedBall.color;
                             ball.dataset.id = savedBall.id;
@@ -787,7 +794,14 @@
                             ball.style.top = (offsetY + row * ballTotalSize + finalOffset) + 'px';
                             ball.dataset.originalLeft = ball.style.left;
                             ball.dataset.originalTop = ball.style.top;
-                            ball.style.background = ballData[ballIndex].bg;
+                            if (ballData[ballIndex].image) {
+                                ball.style.backgroundImage = `url(${ballData[ballIndex].image})`;
+                                ball.style.backgroundSize = 'cover';
+                                ball.style.backgroundPosition = 'center';
+                                ball.style.backgroundColor = 'transparent';
+                            } else {
+                                ball.style.background = ballData[ballIndex].bg;
+                            }
                             ball.style.zIndex = layer + 1;
                             ball.dataset.color = ballData[ballIndex].name;
                             ball.dataset.id = ballData[ballIndex].id;
@@ -1120,7 +1134,14 @@
                 boardBalls.forEach((ball, index) => {
                     const colorData = CONFIG.colors.find(c => c.name === colors[index]);
                     ball.dataset.color = colors[index];
-                    ball.style.background = colorData.bg;
+                    if (colorData.image) {
+                        ball.style.backgroundImage = `url(${colorData.image})`;
+                        ball.style.backgroundSize = 'cover';
+                        ball.style.backgroundPosition = 'center';
+                        ball.style.backgroundColor = 'transparent';
+                    } else {
+                        ball.style.background = colorData.bg;
+                    }
                     ball.textContent = window.innerWidth < 600 ? (['prism', 'bubble', 'lava', 'golden'].includes(colorData.name) ? colorData.emoji : '') : colorData.emoji;
                 });
             }
