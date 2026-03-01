@@ -122,7 +122,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v3.2.4</div>
+        <div id="versionDisplay">v3.2.5</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -190,21 +190,28 @@
                     this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
                     this.initialized = true;
 
-                    // Mobile: unlock audio on first user interaction
                     const unlockAudio = () => {
-                        if (this.audioContext && this.audioContext.state === 'suspended') {
-                            this.audioContext.resume().then(() => {
-                                console.log('Audio context resumed');
-                            });
+                        if (this.audioContext) {
+                            if (this.audioContext.state === 'suspended') {
+                                this.audioContext.resume();
+                            }
+                            this.playSilentTone();
                         }
-                        // 播放一个无声的音频来解锁
-                        this.playSilentTone();
+                        document.removeEventListener('touchstart', unlockAudio);
+                        document.removeEventListener('click', unlockAudio);
+                        document.removeEventListener('mousedown', unlockAudio);
                     };
 
-                    // 监听多种用户交互事件
-                    document.addEventListener('touchstart', unlockAudio, { once: true });
-                    document.addEventListener('click', unlockAudio, { once: true });
-                    document.addEventListener('touchend', unlockAudio, { once: true });
+                    document.addEventListener('touchstart', unlockAudio, { once: false });
+                    document.addEventListener('click', unlockAudio, { once: false });
+                    document.addEventListener('mousedown', unlockAudio, { once: false });
+                    
+                    document.addEventListener("WeixinJSBridgeReady", () => {
+                        if (this.audioContext && this.audioContext.state === 'suspended') {
+                            this.audioContext.resume();
+                        }
+                    }, false);
+
                 } catch(e) {
                     console.error('Audio init failed:', e);
                 }
@@ -489,7 +496,7 @@
             init() { this.bindEvents(); this.handleResize(); window.addEventListener('resize', () => this.handleResize()); }
             bindEvents() {
                 document.getElementById('startBtn').addEventListener('click', () => {
-                    // 重置状态
+                    this.soundManager.init();
                     this.username = null;
                     this.isAdmin = false;
                     this.level = 1;
