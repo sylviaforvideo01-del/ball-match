@@ -80,7 +80,7 @@
         #soundControls { position: fixed; top: 75px; right: 10px; display: flex; gap: 8px; z-index: 200; align-items: center; background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 30px; border: 2px solid rgba(255,255,255,0.3); }
         .soundBtn { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.6); background: linear-gradient(145deg, #ff6b6b, #ee5a5a); color: white; font-size: 16px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.4); transition: all 0.2s; }
         .soundBtn:hover { transform: scale(1.15); box-shadow: 0 8px 25px rgba(255,107,107,0.7), inset 0 2px 4px rgba(255,255,255,0.4); }
-        #exitBtn { position: fixed; top: 75px; right: 130px; padding: 8px 16px; border: none; border-radius: 20px; background: linear-gradient(145deg, #ff4757, #ff3838); color: white; font-size: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(255,71,87,0.4); transition: all 0.2s; z-index: 201; }
+        #exitBtn { position: static; padding: 8px 16px; border: none; border-radius: 20px; background: linear-gradient(145deg, #ff4757, #ff3838); color: white; font-size: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(255,71,87,0.4); transition: all 0.2s; z-index: 201; margin-left: 8px; }
         #exitBtn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(255,71,87,0.6); }
         /* 手机版适配 */
         @media (max-width: 600px) {
@@ -123,7 +123,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v3.3.6</div>
+        <div id="versionDisplay">v3.3.7</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
