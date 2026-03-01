@@ -120,7 +120,7 @@
 
     <div id="gameContainer" style="display: none;">
         <button id="exitBtn">Exit</button>
-        <div id="versionDisplay">v3.1.9</div>
+        <div id="versionDisplay">v3.2.0</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -258,7 +258,7 @@
             slotCount: 7,
             colors: [
                 { name: 'neon', bg: 'radial-gradient(circle at 30% 30%, #ccff00, #88cc00)', emoji: '' },
-                { name: 'prism', bg: 'radial-gradient(circle at 30% 30%, #e0e0ff, #a0a0cc)', emoji: '💠' },
+                { name: 'prism', bg: 'radial-gradient(circle at 30% 30%, #0066ff, #0044cc)', emoji: '' },
                 { name: 'magma', bg: 'radial-gradient(circle at 30% 30%, #990000, #660000)', emoji: '' },
                 { name: 'plasma', bg: 'radial-gradient(circle at 30% 30%, #ff00ff, #aa00aa)', emoji: '' },
                 { name: 'cosmic', bg: 'radial-gradient(circle at 30% 30%, #ff8800, #ff4400)', emoji: '' },
@@ -839,7 +839,7 @@
                             // 紧邻顶层下方（下一层）- 半透明显示
                             ball.classList.add('blocked');
                             ball.classList.remove('clickable');
-                            ball.style.opacity = '0.3';
+                            ball.style.opacity = '0.35';
                             ball.style.visibility = 'visible';
                         } else {
                             // 更深层 - 完全隐藏
