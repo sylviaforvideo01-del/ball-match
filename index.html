@@ -92,7 +92,7 @@
             .soundBtn { width: 32px; height: 32px; font-size: 14px; border: 2px solid rgba(255,255,255,0.8); background: linear-gradient(145deg, #ff6b6b, #ee5a5a); }
             .soundBtn:active { transform: scale(0.95); }
             #exitBtn { position: static; padding: 6px 12px; font-size: 11px; border-radius: 15px; margin-left: 4px; }
-            #gameArea { padding-bottom: 80px; margin-top: 55px; }
+            #gameArea { padding-bottom: 60px; margin-top: 55px; max-height: calc(100vh - 200px); }
             #toolsArea { bottom: clamp(50px, 9vh, 70px); padding: 5px 10px; gap: clamp(5px, 1.2vw, 10px); }
             .toolBtn { width: clamp(40px, 8vw, 52px); height: clamp(40px, 8vw, 52px); font-size: clamp(16px, 3.5vw, 22px); }
             .toolLabel { font-size: 9px; padding: 2px 6px; }
@@ -123,7 +123,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v3.3.4</div>
+        <div id="versionDisplay">v3.3.5</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
