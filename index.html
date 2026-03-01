@@ -80,24 +80,25 @@
         #soundControls { position: fixed; top: 75px; right: 10px; display: flex; gap: 8px; z-index: 200; align-items: center; background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 30px; border: 2px solid rgba(255,255,255,0.3); }
         .soundBtn { width: 36px; height: 36px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.6); background: linear-gradient(145deg, #ff6b6b, #ee5a5a); color: white; font-size: 16px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.4); transition: all 0.2s; }
         .soundBtn:hover { transform: scale(1.15); box-shadow: 0 8px 25px rgba(255,107,107,0.7), inset 0 2px 4px rgba(255,255,255,0.4); }
-        #exitBtn { position: static; padding: 8px 16px; border: none; border-radius: 20px; background: linear-gradient(145deg, #ff4757, #ff3838); color: white; font-size: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(255,71,87,0.4); transition: all 0.2s; z-index: 201; margin-left: 8px; }
+        #exitBtn { position: fixed; top: 75px; right: 120px; padding: 8px 16px; border: none; border-radius: 20px; background: linear-gradient(145deg, #ff4757, #ff3838); color: white; font-size: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 12px rgba(255,71,87,0.4); transition: all 0.2s; z-index: 201; }
         #exitBtn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(255,71,87,0.6); }
         /* 手机版适配 */
         @media (max-width: 600px) {
-            #topBar { padding: 8px 12px; margin: 0 5px; border-radius: 0 0 15px 15px; position: relative; z-index: 100; display: flex !important; visibility: visible !important; opacity: 1 !important; min-height: 50px; }
-            #levelInfo { padding: 6px 12px; font-size: clamp(13px, 4vw, 17px); display: inline-block !important; visibility: visible !important; opacity: 1 !important; }
-            #scoreInfo { padding: 6px 12px; font-size: clamp(12px, 3.5vw, 15px); display: inline-block !important; visibility: visible !important; opacity: 1 !important; -webkit-transform: translateZ(0); }
-            #levelProgress { position: fixed; top: 75px; left: 10px; padding: 4px 10px; font-size: 11px; z-index: 200; }
-            #soundControls { position: fixed; top: 75px; right: 5px; display: flex; gap: 6px; z-index: 200; background: rgba(0,0,0,0.5); padding: 6px 10px; border-radius: 25px; border: 2px solid rgba(255,255,255,0.4); align-items: center; }
-            .soundBtn { width: 32px; height: 32px; font-size: 14px; border: 2px solid rgba(255,255,255,0.8); background: linear-gradient(145deg, #ff6b6b, #ee5a5a); }
+            #topBar { padding: 6px 10px; margin: 0 3px; border-radius: 0 0 12px 12px; position: relative; z-index: 100; display: flex !important; visibility: visible !important; opacity: 1 !important; min-height: 45px; }
+            #levelInfo { padding: 5px 10px; font-size: clamp(12px, 3.5vw, 16px); display: inline-block !important; visibility: visible !important; opacity: 1 !important; }
+            #scoreInfo { padding: 5px 10px; font-size: clamp(11px, 3vw, 14px); display: inline-block !important; visibility: visible !important; opacity: 1 !important; -webkit-transform: translateZ(0); }
+            #levelProgress { position: fixed; top: 70px; left: 10px; padding: 3px 8px; font-size: 10px; z-index: 200; }
+            #soundControls { position: fixed; top: 70px; right: 80px; display: flex; gap: 6px; z-index: 200; background: rgba(0,0,0,0.5); padding: 6px 10px; border-radius: 25px; border: 2px solid rgba(255,255,255,0.4); }
+            .soundBtn { width: 30px; height: 30px; font-size: 14px; border: 2px solid rgba(255,255,255,0.8); background: linear-gradient(145deg, #ff6b6b, #ee5a5a); }
             .soundBtn:active { transform: scale(0.95); }
-            #exitBtn { position: static; padding: 6px 12px; font-size: 11px; border-radius: 15px; margin-left: 4px; }
-            #gameArea { padding-bottom: 60px; margin-top: 55px; max-height: calc(100vh - 200px); }
-            #toolsArea { bottom: clamp(50px, 9vh, 70px); padding: 5px 10px; gap: clamp(5px, 1.2vw, 10px); }
-            .toolBtn { width: clamp(40px, 8vw, 52px); height: clamp(40px, 8vw, 52px); font-size: clamp(16px, 3.5vw, 22px); }
+            #exitBtn { position: fixed; top: 70px; right: 5px; padding: 6px 12px; font-size: 11px; z-index: 201; }
+            #gameArea { flex: 1; margin-top: 45px; margin-bottom: 140px; overflow: hidden; }
+            #board { max-height: 100%; }
+            #toolsArea { position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%); padding: 6px 12px; gap: 10px; z-index: 100; }
+            .toolBtn { width: 44px; height: 44px; font-size: 18px; }
             .toolLabel { font-size: 9px; padding: 2px 6px; }
-            #slotArea { height: clamp(45px, 8vh, 65px); padding: 3px; gap: 2px; }
-            .slot { min-width: 34px; min-height: 34px; }
+            #slotArea { position: fixed; bottom: 0; left: 0; right: 0; height: 60px; padding: 5px; gap: 4px; z-index: 100; }
+            .slot { min-width: 36px; min-height: 36px; }
         }
         /* Admin Panel Styles */
         .admin-panel { background: linear-gradient(145deg,#ff6b6b,#ee5a5a); padding: 15px; border-radius: 15px; text-align: center; color: white; max-width: 95%; width: 320px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
@@ -123,12 +124,12 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v3.3.7</div>
+        <div id="versionDisplay">v3.3.8</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
-            <button id="exitBtn">Exit</button>
         </div>
+        <button id="exitBtn">Exit</button>
         <div id="topBar">
             <div id="levelInfo">Level 1</div>
             <div id="scoreInfo">Score: 0</div>
