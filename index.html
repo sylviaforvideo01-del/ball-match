@@ -124,7 +124,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v3.3.9</div>
+        <div id="versionDisplay">v3.4.0</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -345,6 +345,16 @@
             }
 
             showUsernameModal() {
+                // 检查是否有 CrazyGames 登录用户
+                if (CrazySDK.user && CrazySDK.user.username) {
+                    this.username = CrazySDK.user.username;
+                    this.isAdmin = false;
+                    console.log('Auto-logged in with CrazyGames user:', this.username);
+                    this.showUserInfo();
+                    this.startGame();
+                    return;
+                }
+                
                 const modal = document.createElement('div');
                 modal.id = 'usernameModal';
                 modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:5000;';
@@ -1317,10 +1327,23 @@
         }
         // CrazyGames SDK Integration
         const CrazySDK = {
+            user: null,
             init: function() {
                 if (typeof window.CrazyGames !== 'undefined') {
                     window.CrazyGames.SDK.init();
                     console.log('CrazyGames SDK initialized');
+                    // 获取用户信息
+                    this.getUser();
+                }
+            },
+            getUser: function() {
+                if (typeof window.CrazyGames !== 'undefined' && window.CrazyGames.SDK.user) {
+                    try {
+                        this.user = window.CrazyGames.SDK.user.getUser();
+                        console.log('CrazyGames user:', this.user);
+                    } catch (e) {
+                        console.log('No CrazyGames user logged in');
+                    }
                 }
             },
 
