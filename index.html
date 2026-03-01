@@ -84,19 +84,19 @@
         #exitBtn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(255,71,87,0.6); }
         /* 手机版适配 */
         @media (max-width: 600px) {
-            #topBar { padding: 8px 12px; margin: 0 5px; border-radius: 0 0 15px 15px; }
-            #levelInfo { padding: 5px 12px; font-size: clamp(14px, 4vw, 18px); }
-            #scoreInfo { padding: 5px 12px; font-size: clamp(12px, 3.5vw, 16px); }
-            #levelProgress { top: 60px; left: 10px; padding: 4px 10px; font-size: 10px; }
-            #soundControls { top: 60px; right: 5px; }
+            #topBar { padding: 6px 10px; margin: 0 3px; border-radius: 0 0 12px 12px; position: relative; z-index: 50; }
+            #levelInfo { padding: 4px 10px; font-size: clamp(12px, 3.5vw, 16px); }
+            #scoreInfo { padding: 4px 10px; font-size: clamp(11px, 3vw, 14px); display: block !important; visibility: visible !important; opacity: 1 !important; }
+            #levelProgress { position: relative; top: auto; left: auto; margin: 5px auto; display: inline-block; padding: 3px 8px; font-size: 10px; }
+            #soundControls { position: relative; top: auto; right: auto; justify-content: center; margin: 5px 0; }
             .soundBtn { width: 32px; height: 32px; font-size: 14px; }
             #exitBtn { padding: 6px 12px; font-size: 11px; }
-            #gameArea { padding-bottom: 100px; }
-            #toolsArea { bottom: clamp(60px, 11vh, 85px); padding: 6px 12px; gap: clamp(6px, 1.5vw, 12px); }
+            #gameArea { padding-bottom: 90px; margin-top: 5px; }
+            #toolsArea { bottom: clamp(55px, 10vh, 80px); padding: 6px 12px; gap: clamp(6px, 1.5vw, 12px); }
             .toolBtn { width: clamp(44px, 9vw, 56px); height: clamp(44px, 9vw, 56px); font-size: clamp(18px, 4vw, 24px); }
             .toolLabel { font-size: 10px; padding: 2px 8px; }
-            #slotArea { height: clamp(55px, 10vh, 75px); padding: 5px; gap: 4px; }
-            .slot { min-width: 40px; min-height: 40px; }
+            #slotArea { height: clamp(50px, 9vh, 70px); padding: 4px; gap: 3px; }
+            .slot { min-width: 36px; min-height: 36px; }
         }
         /* Admin Panel Styles */
         .admin-panel { background: linear-gradient(145deg,#ff6b6b,#ee5a5a); padding: 15px; border-radius: 15px; text-align: center; color: white; max-width: 95%; width: 320px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
@@ -122,7 +122,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v3.2.3</div>
+        <div id="versionDisplay">v3.2.4</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
