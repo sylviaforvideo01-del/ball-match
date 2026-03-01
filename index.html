@@ -84,14 +84,14 @@
         #exitBtn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(255,71,87,0.6); }
         /* 手机版适配 */
         @media (max-width: 600px) {
-            #topBar { padding: 6px 10px; margin: 0 3px; border-radius: 0 0 12px 12px; }
+            #topBar { padding: 6px 10px; margin: 0 3px; border-radius: 0 0 12px 12px; position: relative; z-index: 100; }
             #levelInfo { padding: 4px 10px; font-size: clamp(12px, 3.5vw, 16px); }
             #scoreInfo { padding: 4px 10px; font-size: clamp(11px, 3vw, 14px); display: block !important; visibility: visible !important; opacity: 1 !important; }
-            #levelProgress { position: fixed; top: 55px; left: 10px; padding: 3px 8px; font-size: 10px; z-index: 200; }
-            #soundControls { position: fixed; top: 55px; right: 5px; display: flex; gap: 6px; z-index: 200; }
+            #levelProgress { position: fixed; top: 70px; left: 10px; padding: 3px 8px; font-size: 10px; z-index: 200; }
+            #soundControls { position: fixed; top: 70px; right: 5px; display: flex; gap: 6px; z-index: 200; }
             .soundBtn { width: 32px; height: 32px; font-size: 14px; }
             #exitBtn { padding: 6px 12px; font-size: 11px; }
-            #gameArea { padding-bottom: 90px; margin-top: 10px; }
+            #gameArea { padding-bottom: 90px; margin-top: 50px; }
             #toolsArea { bottom: clamp(55px, 10vh, 80px); padding: 6px 12px; gap: clamp(6px, 1.5vw, 12px); }
             .toolBtn { width: clamp(44px, 9vw, 56px); height: clamp(44px, 9vw, 56px); font-size: clamp(18px, 4vw, 24px); }
             .toolLabel { font-size: 10px; padding: 2px 8px; }
@@ -122,7 +122,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v3.2.6</div>
+        <div id="versionDisplay">v3.2.7</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
