@@ -91,10 +91,12 @@
             #soundControls { top: 60px; right: 5px; }
             .soundBtn { width: 32px; height: 32px; font-size: 14px; }
             #exitBtn { padding: 6px 12px; font-size: 11px; }
-            #gameArea { padding-bottom: 120px; }
-            #toolsArea { bottom: clamp(75px, 13vh, 105px); padding: 8px 16px; gap: clamp(8px, 2vw, 16px); }
-            .toolBtn { width: clamp(48px, 10vw, 60px); height: clamp(48px, 10vw, 60px); }
-            #slotArea { height: clamp(65px, 11vh, 90px); padding: 6px; }
+            #gameArea { padding-bottom: 100px; }
+            #toolsArea { bottom: clamp(60px, 11vh, 85px); padding: 6px 12px; gap: clamp(6px, 1.5vw, 12px); }
+            .toolBtn { width: clamp(44px, 9vw, 56px); height: clamp(44px, 9vw, 56px); font-size: clamp(18px, 4vw, 24px); }
+            .toolLabel { font-size: 10px; padding: 2px 8px; }
+            #slotArea { height: clamp(55px, 10vh, 75px); padding: 5px; gap: 4px; }
+            .slot { min-width: 40px; min-height: 40px; }
         }
         /* Admin Panel Styles */
         .admin-panel { background: linear-gradient(145deg,#ff6b6b,#ee5a5a); padding: 15px; border-radius: 15px; text-align: center; color: white; max-width: 95%; width: 320px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
@@ -120,7 +122,7 @@
     </div>
 
     <div id="gameContainer" style="display: none;">
-        <div id="versionDisplay">v3.2.2</div>
+        <div id="versionDisplay">v3.2.3</div>
         <div id="soundControls">
             <button class="soundBtn" id="clickSoundBtn" title="Sound Effects">🔊</button>
             <button class="soundBtn" id="cheerSoundBtn" title="Cheer Effects">🎶</button>
@@ -258,7 +260,7 @@
         const CONFIG = {
             slotCount: 7,
             colors: [
-                { name: 'neon', bg: 'radial-gradient(circle at 30% 30%, #ccff00, #88cc00)', emoji: '' },
+                { name: 'rainbow', bg: 'linear-gradient(180deg, #ff0000, #ff8800, #ffff00, #00ff00, #0088ff, #8800ff)', emoji: '' },
                 { name: 'prism', bg: 'radial-gradient(circle at 30% 30%, #0066ff, #0044cc)', emoji: '' },
                 { name: 'magma', bg: 'radial-gradient(circle at 30% 30%, #990000, #660000)', emoji: '' },
                 { name: 'plasma', bg: 'radial-gradient(circle at 30% 30%, #ff00ff, #aa00aa)', emoji: '' },
@@ -271,7 +273,7 @@
                 { name: 'water', bg: 'radial-gradient(circle at 30% 30%, #00ffff, #00cccc)', emoji: '💧' },
                 { name: 'emerald', bg: 'radial-gradient(circle at 30% 30%, #00cc66, #008844)', emoji: '🌿' },
                 { name: 'golden', bg: 'radial-gradient(circle at 30% 30%, #ffcc00, #cc9900)', emoji: '⭐' },
-                { name: 'rainbow', bg: 'linear-gradient(180deg, #ff0000, #ff8800, #ffff00, #00ff00, #0088ff, #8800ff)', emoji: '' }
+                { name: 'neon', bg: 'radial-gradient(circle at 30% 30%, #ccff00, #88cc00)', emoji: '' }
             ],
             levels: [
                 { rows: 3, cols: 5, layers: 1, types: 2, name: "Level 1" },
